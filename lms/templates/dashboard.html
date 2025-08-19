@@ -1,0 +1,136 @@
+<!-- templates/dashboard.html -->
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - LMS{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Welcome Section -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <h1 class="card-title">Welcome, {{ user.username }}! 👋</h1>
+                    <p class="card-text">What would you like to do today?</p>
+                    <p class="card-text">
+                        <small>Last login: {{ user.last_login|date:"F j, Y, g:i a"|default:"First time login!" }}</small>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Dashboard Cards -->
+    <div class="row">
+        <!-- Timetable Card -->
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm border-primary">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-calendar-alt fa-3x text-primary"></i>
+                    </div>
+                    <h5 class="card-title">Timetable</h5>
+                    <p class="card-text">View your class schedule and upcoming events</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center">
+                    <a href="{% url 'timetable' %}" class="btn btn-primary">View Timetable</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resources Card -->
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm border-success">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-book fa-3x text-success"></i>
+                    </div>
+                    <h5 class="card-title">Resources</h5>
+                    <p class="card-text">Access learning materials and study resources</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center">
+                    <a href="{% url 'resources' %}" class="btn btn-success">View Resources</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Assignments Card -->
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm border-warning">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-tasks fa-3x text-warning"></i>
+                    </div>
+                    <h5 class="card-title">Assignments</h5>
+                    <p class="card-text">Check and submit your assignments</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center">
+                    <a href="{% url 'assignments' %}" class="btn btn-warning">View Assignments</a>
+                </div>
+            </div>
+        </div>
+
+        <!-- CATS Card -->
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm border-danger">
+                <div class="card-body text-center">
+                    <div class="mb-3">
+                        <i class="fas fa-file-alt fa-3x text-danger"></i>
+                    </div>
+                    <h5 class="card-title">CATS</h5>
+                    <p class="card-text">Continuous Assessment Tests and exams</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center">
+                    <a href="{% url 'cats' %}" class="btn btn-danger">View CATS</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Stats Section (Optional) -->
+    <div class="row mt-5">
+        <div class="col-12">
+            <h3>Quick Stats</h3>
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h6 class="card-title">Upcoming Classes</h6>
+                            <h4 class="text-primary">3</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h6 class="card-title">Pending Assignments</h6>
+                            <h4 class="text-warning">2</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h6 class="card-title">New Resources</h6>
+                            <h4 class="text-success">5</h4>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center">
+                        <div class="card-body">
+                            <h6 class="card-title">Upcoming CATS</h6>
+                            <h4 class="text-danger">1</h4>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<!-- Font Awesome for icons -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/js/all.min.js"></script>
+{% endblock %}
