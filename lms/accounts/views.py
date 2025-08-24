@@ -81,9 +81,6 @@ def user_list_view(request):
 def timetable_view(request):
     return render(request, 'timetable.html')
 
-@login_required
-def resources_view(request):
-    return render(request, 'resources.html')
 
 @login_required
 def assignments_view(request):
