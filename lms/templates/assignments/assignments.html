@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+
+{% block title %}Assignments - LMS{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2>Assignments</h2>
+        {% if is_trainer %}
+        <a href="{% url 'create_assignment' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> Create Assignment
+        </a>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        {% for assignment in assignments %}
+        <div class="col-md-6 mb-4">
+            <div class="card h-100 {% if now > assignment.due_date %}border-danger{% endif %}">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">{{ assignment.title }}</h5>
+                        <span class="badge bg-{% if assignment.assignment_type == 'multiple_choice' %}primary{% else %}info{% endif %}">
+                            {{ assignment.get_assignment_type_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="card-text">{{ assignment.description|truncatewords:30 }}</p>
+                    <div class="mb-2">
+                        <strong>Due:</strong> {{ assignment.due_date|date:"M d, Y H:i" }}
+                        {% if now > assignment.due_date %}
+                        <span class="badge bg-danger ms-2">Closed</span>
+                        {% endif %}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Marks:</strong> {{ assignment.total_marks }}
+                    </div>
+                    <div class="mb-2">
+                        <strong>Questions:</strong> {{ assignment.questions.count }}
+                    </div>
+                </div>
+                <div class="card-footer">
+                    <a href="{% url 'assignment_detail' assignment.pk %}" class="btn btn-primary btn-sm">
+                        View Details
+                    </a>
+                    {% if not is_trainer %}
+                        {% if assignment.pk in submissions %}
+                            <span class="badge bg-success ms-2">Submitted</span>
+                        {% elif now < assignment.due_date %}
+                            <a href="{% url 'take_assignment' assignment.pk %}" class="btn btn-success btn-sm ms-2">
+                                Take Assignment
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        {% empty %}
+        <div class="col-12">
+            <div class="text-center py-5">
+                <i class="fas fa-tasks fa-3x text-muted mb-3"></i>
+                <h4>No assignments available</h4>
+                <p class="text-muted">{% if is_trainer %}Create your first assignment to get started.{% else %}Check back later for new assignments.{% endif %}</p>
+                {% if is_trainer %}
+                <a href="{% url 'create_assignment' %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Create First Assignment
+                </a>
+                {% endif %}
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

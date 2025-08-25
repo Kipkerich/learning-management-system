@@ -2,7 +2,6 @@ from django.shortcuts import render, get_object_or_404, redirect
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse, Http404
 from django.contrib import messages
-import os
 from .models import Resource
 from .forms import ResourceForm
 

@@ -1,0 +1,243 @@
+
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Add Questions - {{ assignment.title }} - LMS{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <!-- Header Card -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">Add Questions to: {{ assignment.title }}</h3>
+                        <span class="badge bg-light text-dark">
+                            {{ assignment.get_assignment_type_display }}
+                        </span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <p class="mb-2"><strong>Description:</strong> {{ assignment.description }}</p>
+                    <p class="mb-2"><strong>Due Date:</strong> {{ assignment.due_date|date:"M d, Y H:i" }}</p>
+                    <p class="mb-0"><strong>Total Marks:</strong> {{ assignment.total_marks }}</p>
+                </div>
+            </div>
+
+            <!-- Add Question Form -->
+            <div class="card mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Add New Question</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Question Text -->
+                        <div class="mb-3">
+                            <label class="form-label">Question Text *</label>
+                            {{ question_form.question_text }}
+                            {% if question_form.question_text.errors %}
+                            <div class="text-danger mt-1">
+                                {% for error in question_form.question_text.errors %}
+                                <small>{{ error }}</small>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- Marks and Order -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label">Marks *</label>
+                                {{ question_form.marks }}
+                                {% if question_form.marks.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in question_form.marks.errors %}
+                                    <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Question Order</label>
+                                {{ question_form.order }}
+                                {% if question_form.order.errors %}
+                                <div class="text-danger mt-1">
+                                    {% for error in question_form.order.errors %}
+                                    <small>{{ error }}</small>
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {% if assignment.assignment_type == 'multiple_choice' %}
+                        <!-- Multiple Choice Options -->
+                        <div class="mb-3">
+                            <label class="form-label">Multiple Choice Options *</label>
+                            <div class="card">
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-8">
+                                            <strong>Option Text</strong>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <strong>Correct Answer</strong>
+                                        </div>
+                                    </div>
+                                    <hr class="my-2">
+                                    
+                                    {% for form in choice_formset %}
+                                    <div class="row mb-2">
+                                        <div class="col-md-8">
+                                            {{ form.choice_text }}
+                                            {{ form.id }}
+                                            {% if form.choice_text.errors %}
+                                            <div class="text-danger">
+                                                <small>{{ form.choice_text.errors }}</small>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                        <div class="col-md-4 text-center">
+                                            {{ form.is_correct }}
+                                            {% if form.is_correct.errors %}
+                                            <div class="text-danger">
+                                                <small>{{ form.is_correct.errors }}</small>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% endfor %}
+                                    {{ choice_formset.management_form }}
+                                </div>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-plus"></i> Add Question
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Current Questions -->
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Current Questions ({{ questions.count }})</h5>
+                </div>
+                <div class="card-body">
+                    {% if questions %}
+                    <div class="list-group">
+                        {% for question in questions %}
+                        <div class="list-group-item">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">Q{{ question.order }}: {{ question.question_text|truncatewords:10 }}</h6>
+                                    <small class="text-muted">{{ question.marks }} marks</small>
+                                    {% if assignment.assignment_type == 'multiple_choice' %}
+                                    <div class="mt-2">
+                                        <small><strong>Options:</strong></small>
+                                        <ul class="mb-0 ps-3">
+                                            {% for choice in question.choices.all %}
+                                            <li>
+                                                <small>{{ choice.choice_text }}
+                                                {% if choice.is_correct %}
+                                                <span class="badge bg-success ms-1">Correct</span>
+                                                {% endif %}
+                                                </small>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                                <div class="btn-group btn-group-sm">
+                                    <a href="#" class="btn btn-outline-primary">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <a href="#" class="btn btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <div class="mt-3 p-3 bg-light rounded">
+                        <h6>Total Marks: {{ questions|length|add:0|default:0 }}</h6>
+                        <div class="progress mb-2">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: {{ questions|length|add:0|default:0 }}%">
+                                {{ questions|length|add:0|default:0 }}%
+                            </div>
+                        </div>
+                        <small class="text-muted">Assignment total: {{ assignment.total_marks }} marks</small>
+                    </div>
+
+                    {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-question-circle fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">No questions added yet. Start by adding your first question above.</p>
+                    </div>
+                    {% endif %}
+
+                    {% if questions %}
+                    <div class="mt-3 d-grid">
+                        <a href="{% url 'assignments' %}" class="btn btn-primary">
+                            <i class="fas fa-check"></i> Finish & Return to Assignments
+                        </a>
+                    </div>
+                    {% endif %}
+                    {% endblock %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .list-group-item {
+        border-left: 4px solid #0d6efd;
+    }
+    
+    .progress {
+        height: 8px;
+    }
+    
+    input[type="checkbox"] {
+        width: 20px;
+        height: 20px;
+        margin-top: 0.5rem;
+    }
+    
+    textarea {
+        min-height: 80px;
+        resize: vertical;
+    }
+</style>
+
+{% block scripts %}
+<script src="{% static 'assignments/js/assignments.js' %}"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add Bootstrap classes to form elements
+    const inputs = document.querySelectorAll('input, textarea, select');
+    inputs.forEach(input => {
+        if (input.type !== 'checkbox' && input.type !== 'hidden') {
+            input.classList.add('form-control');
+        }
+    });
+    
+    // Style checkboxes
+    const checkboxes = document.querySelectorAll('input[type="checkbox"]');
+    checkboxes.forEach(checkbox => {
+        checkbox.classList.add('form-check-input');
+    });
+});
+</script>
+{% endblock %}

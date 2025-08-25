@@ -14,6 +14,5 @@ urlpatterns = [
     path('api/profile/update/', UserProfileUpdate.as_view(), name='api_profile_update'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('timetable/', views.timetable_view, name='timetable'),
-    path('assignments/', views.assignments_view, name='assignments'),
     path('cats/', views.cats_view, name='cats'),
 ]

@@ -1,0 +1,179 @@
+<!-- templates/assignments/grade_submission.html -->
+{% extends 'base.html' %}
+
+{% block title %}Grade Submission - {{ assignment.title }} - LMS{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-10 mx-auto">
+            <!-- Header -->
+            <div class="card mb-4">
+                <div class="card-header bg-dark text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h3 class="mb-0">Grade Submission</h3>
+                        <div>
+                            <span class="badge bg-{% if submission.is_graded %}success{% else %}warning{% endif %} me-2">
+                                {% if submission.is_graded %}Graded{% else %}Pending{% endif %}
+                            </span>
+                            <a href="{% url 'view_submissions' assignment.pk %}" class="btn btn-sm btn-light">
+                                <i class="fas fa-arrow-left"></i> Back to Submissions
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <h5>Student Information</h5>
+                            <p class="mb-1"><strong>Name:</strong> {{ submission.student.get_full_name|default:submission.student.username }}</p>
+                            <p class="mb-1"><strong>Email:</strong> {{ submission.student.email }}</p>
+                            <p class="mb-0"><strong>Submitted:</strong> {{ submission.submitted_at|date:"M d, Y H:i" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <h5>Assignment Information</h5>
+                            <p class="mb-1"><strong>Title:</strong> {{ assignment.title }}</p>
+                            <p class="mb-1"><strong>Due Date:</strong> {{ assignment.due_date|date:"M d, Y H:i" }}</p>
+                            <p class="mb-0"><strong>Total Marks:</strong> {{ assignment.total_marks }}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Answers and Grading Form -->
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Student Answers</h5>
+                    </div>
+                    <div class="card-body">
+                        {% for answer in answers %}
+                        <div class="card mb-3">
+                            <div class="card-header bg-light">
+                                <h6 class="mb-0">Question {{ forloop.counter }} ({{ answer.question.marks }} marks)</h6>
+                            </div>
+                            <div class="card-body">
+                                <p class="fw-bold">{{ answer.question.question_text }}</p>
+                                
+                                <!-- Student's Answer -->
+                                <div class="mb-3 p-3 bg-light rounded">
+                                    <h6>Student's Answer:</h6>
+                                    {% if assignment.assignment_type == 'multiple_choice' %}
+                                        {% if answer.selected_choice %}
+                                        <p class="mb-0">
+                                            {{ answer.selected_choice.choice_text }}
+                                            {% if answer.selected_choice.is_correct %}
+                                            <span class="badge bg-success ms-2">Correct</span>
+                                            {% else %}
+                                            <span class="badge bg-danger ms-2">Incorrect</span>
+                                            {% endif %}
+                                        </p>
+                                        {% else %}
+                                        <p class="text-muted mb-0">No answer provided</p>
+                                        {% endif %}
+                                    {% else %}
+                                        <p class="mb-0">{{ answer.answer_text|default:"No answer provided" }}</p>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Grading Section -->
+                                {% if assignment.assignment_type == 'multiple_choice' %}
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    Multiple choice questions are automatically graded.
+                                    {% if answer.selected_choice and answer.selected_choice.is_correct %}
+                                    <strong>Score: {{ answer.question.marks }}/{{ answer.question.marks }}</strong>
+                                    {% else %}
+                                    <strong>Score: 0/{{ answer.question.marks }}</strong>
+                                    {% endif %}
+                                </div>
+                                {% else %}
+                                <div class="mb-3">
+                                    <label class="form-label">Marks Awarded (0-{{ answer.question.marks }})</label>
+                                    <input type="number" class="form-control" name="marks_{{ answer.question.id }}"
+                                           min="0" max="{{ answer.question.marks }}" 
+                                           value="{% if answer.selected_choice and answer.selected_choice.is_correct %}{{ answer.question.marks }}{% else %}0{% endif %}">
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endfor %}
+
+                        <!-- Total Score -->
+                        <div class="card bg-light">
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <h5>Total Score: {{ submission.total_marks_obtained }}/{{ assignment.total_marks }}</h5>
+                                        {% widthratio submission.total_marks_obtained assignment.total_marks 100 as percentage %}
+                                        <div class="progress mb-2" style="height: 20px;">
+                                            <div class="progress-bar bg-{% if percentage >= 80 %}success{% elif percentage >= 50 %}warning{% else %}danger{% endif %}" 
+                                                 role="progressbar" style="width: {{ percentage }}%">
+                                                {{ percentage }}%
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-group">
+                                            <label for="feedback" class="form-label">Feedback</label>
+                                            <textarea class="form-control" id="feedback" name="feedback" 
+                                                      rows="3" placeholder="Provide feedback for the student...">{{ submission.feedback }}</textarea>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" name="action" value="save_draft" class="btn btn-secondary me-md-2">
+                        <i class="fas fa-save"></i> Save Draft
+                    </button>
+                    <button type="submit" name="action" value="submit_grade" class="btn btn-success">
+                        <i class="fas fa-check"></i> Submit Grade
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .progress {
+        border-radius: 10px;
+    }
+    
+    .progress-bar {
+        border-radius: 10px;
+        font-weight: bold;
+    }
+    
+    .bg-light {
+        background-color: #f8f9fa !important;
+    }
+    
+    textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add form-control class to all inputs
+    const inputs = document.querySelectorAll('input, textarea');
+    inputs.forEach(input => {
+        input.classList.add('form-control');
+    });
+    
+    // Mark graded submission
+    {% if submission.is_graded %}
+    document.querySelector('button[value="submit_grade"]').textContent = ' Update Grade';
+    {% endif %}
+});
+</script>
+{% endblock %}

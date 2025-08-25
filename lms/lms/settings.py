@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'accounts',
     'rest_framework',
     'resources',
+    'assignments',
     
 ]
 

@@ -1,0 +1,347 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block title %}{{ assignment.title }} - LMS{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <!-- Header Section -->
+    <div class="card mb-4">
+        <div class="card-header bg-dark text-white">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="mb-0">{{ assignment.title }}</h2>
+                <span class="badge bg-{% if assignment.assignment_type == 'multiple_choice' %}primary{% else %}info{% endif %}">
+                    {{ assignment.get_assignment_type_display }}
+                </span>
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-8">
+                    <h5>Description</h5>
+                    <p class="card-text">{{ assignment.description }}</p>
+                    
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <p><strong>Created by:</strong> {{ assignment.created_by.get_full_name|default:assignment.created_by.username }}</p>
+                            <p><strong>Created on:</strong> {{ assignment.created_at|date:"M d, Y" }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Due Date:</strong> {{ assignment.due_date|date:"M d, Y H:i" }}</p>
+                            <p><strong>Total Marks:</strong> {{ assignment.total_marks }}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card bg-light">
+                        <div class="card-body text-center">
+                            <h6>Assignment Status</h6>
+                            {% if now > assignment.due_date %}
+                            <span class="badge bg-danger mb-2">Closed</span>
+                            <p class="small text-muted">The due date has passed</p>
+                            {% else %}
+                            <span class="badge bg-success mb-2">Open</span>
+                            <p class="small text-muted">Due in {{ assignment.due_date|timeuntil:now }}</p>
+                            {% endif %}
+                            
+                            <p class="mb-1"><small>Questions: {{ assignment.questions.count }}</small></p>
+                            <p class="mb-0"><small>Status: 
+                                <span class="badge bg-{% if assignment.is_published %}success{% else %}warning{% endif %}">
+                                    {% if assignment.is_published %}Published{% else %}Draft{% endif %}
+                                </span>
+                            </small></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex gap-2">
+                <a href="{% url 'assignments' %}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Assignments
+                </a>
+                
+                {% if is_trainer %}
+                <a href="{% url 'add_questions' assignment.pk %}" class="btn btn-outline-primary">
+                    <i class="fas fa-plus"></i> Add Questions
+                </a>
+                <a href="{% url 'view_submissions' assignment.pk %}" class="btn btn-outline-info">
+                    <i class="fas fa-users"></i> View Submissions ({{ assignment.submissions.count }})
+                </a>
+                {% if not assignment.is_published %}
+                <form method="post" action="{% url 'publish_assignment' assignment.pk %}" class="d-inline">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-globe"></i> Publish Assignment
+                    </button>
+                </form>
+                {% endif %}
+                {% else %}
+                <!-- Student Actions -->
+                {% if student_submission %}
+                <button class="btn btn-success" disabled>
+                    <i class="fas fa-check"></i> Submitted
+                </button>
+                <span class="badge bg-{% if student_submission.is_graded %}info{% else %}warning{% endif %} align-self-center">
+                    {% if student_submission.is_graded %}
+                    Graded: {{ student_submission.total_marks_obtained }}/{{ assignment.total_marks }}
+                    {% else %}
+                    Awaiting Grading
+                    {% endif %}
+                </span>
+                {% elif now < assignment.due_date %}
+                <a href="{% url 'take_assignment' assignment.pk %}" class="btn btn-primary">
+                    <i class="fas fa-pencil-alt"></i> Take Assignment
+                </a>
+                {% else %}
+                <button class="btn btn-secondary" disabled>
+                    <i class="fas fa-clock"></i> Assignment Closed
+                </button>
+                {% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Questions Preview -->
+    <div class="card">
+        <div class="card-header">
+            <h4 class="mb-0">Questions ({{ assignment.questions.count }})</h4>
+        </div>
+        <div class="card-body">
+            {% if assignment.questions.all %}
+            <div class="accordion" id="questionsAccordion">
+                {% for question in assignment.questions.all %}
+                <div class="accordion-item">
+                    <h2 class="accordion-header" id="heading{{ forloop.counter }}">
+                        <button class="accordion-button {% if not forloop.first %}collapsed{% endif %}" 
+                                type="button" data-bs-toggle="collapse" 
+                                data-bs-target="#collapse{{ forloop.counter }}" 
+                                aria-expanded="{% if forloop.first %}true{% else %}false{% endif %}" 
+                                aria-controls="collapse{{ forloop.counter }}">
+                            <span class="badge bg-primary me-2">Q{{ forloop.counter }}</span>
+                            {{ question.question_text|truncatewords:10 }}
+                            <span class="badge bg-secondary ms-2">{{ question.marks }} marks</span>
+                        </button>
+                    </h2>
+                    <div id="collapse{{ forloop.counter }}" 
+                         class="accordion-collapse collapse {% if forloop.first %}show{% endif %}" 
+                         aria-labelledby="heading{{ forloop.counter }}" 
+                         data-bs-parent="#questionsAccordion">
+                        <div class="accordion-body">
+                            <h6>Question:</h6>
+                            <p>{{ question.question_text }}</p>
+                            
+                            {% if assignment.assignment_type == 'multiple_choice' and question.choices.all %}
+                            <h6>Options:</h6>
+                            <div class="list-group">
+                                {% for choice in question.choices.all %}
+                                <div class="list-group-item">
+                                    {{ choice.choice_text }}
+                                    {% if choice.is_correct %}
+                                    <span class="badge bg-success float-end">Correct</span>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                            
+                            <div class="mt-3">
+                                <small class="text-muted">Marks: {{ question.marks }}</small>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            
+            <!-- Total Marks Summary -->
+            <div class="mt-4 p-3 bg-light rounded">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h5>Total Questions: {{ assignment.questions.count }}</h5>
+                        <h5>Total Marks: {{ assignment.total_marks }}</h5>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="progress mb-2" style="height: 20px;">
+                            <div class="progress-bar" role="progressbar" 
+                                 style="width: 100%" aria-valuenow="100" 
+                                 aria-valuemin="0" aria-valuemax="100">
+                                Complete
+                            </div>
+                        </div>
+                        <small class="text-muted">Assignment structure is complete</small>
+                    </div>
+                </div>
+            </div>
+            
+            {% else %}
+            <div class="text-center py-4">
+                <i class="fas fa-question-circle fa-3x text-muted mb-3"></i>
+                <h5>No Questions Added Yet</h5>
+                <p class="text-muted">
+                    {% if is_trainer %}
+                    This assignment doesn't have any questions yet. Click "Add Questions" to get started.
+                    {% else %}
+                    The instructor hasn't added questions to this assignment yet.
+                    {% endif %}
+                </p>
+                {% if is_trainer %}
+                <a href="{% url 'add_questions' assignment.pk %}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add Questions
+                </a>
+                {% endif %}
+            </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Submission Information (for students) -->
+    {% if not is_trainer and student_submission %}
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0">Your Submission</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p><strong>Submitted on:</strong> {{ student_submission.submitted_at|date:"M d, Y H:i" }}</p>
+                    <p><strong>Status:</strong> 
+                        <span class="badge bg-{% if student_submission.is_graded %}success{% else %}warning{% endif %}">
+                            {% if student_submission.is_graded %}Graded{% else %}Pending Review{% endif %}
+                        </span>
+                    </p>
+                </div>
+                <div class="col-md-6">
+                    {% if student_submission.is_graded %}
+                    <p><strong>Marks Obtained:</strong> 
+                        <span class="fw-bold">{{ student_submission.total_marks_obtained }}/{{ assignment.total_marks }}</span>
+                    </p>
+                    <p><strong>Feedback:</strong> 
+                        {{ student_submission.feedback|default:"No feedback provided" }}
+                    </p>
+                    {% else %}
+                    <p class="text-muted">Your submission is being reviewed by the instructor.</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Instructor Notes (for trainers) -->
+    {% if is_trainer %}
+    <div class="card mt-4">
+        <div class="card-header bg-warning">
+            <h5 class="mb-0">Instructor Notes</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card text-center mb-3">
+                        <div class="card-body">
+                            <h6>Submissions</h6>
+                            <h3 class="text-primary">{{ assignment.submissions.count }}</h3>
+                            <small class="text-muted">Total submissions</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center mb-3">
+                        <div class="card-body">
+                            <h6>Graded</h6>
+                            <h3 class="text-success">{{ graded_submissions }}</h3>
+                            <small class="text-muted">Graded submissions</small>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card text-center mb-3">
+                        <div class="card-body">
+                            <h6>Pending</h6>
+                            <h3 class="text-warning">{{ pending_submissions }}</h3>
+                            <small class="text-muted">Pending grading</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center">
+                <a href="{% url 'view_submissions' assignment.pk %}" class="btn btn-primary">
+                    <i class="fas fa-users"></i> Manage Submissions
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+    {% endblock %}
+</div>
+
+<style>
+    .accordion-button:not(.collapsed) {
+        background-color: #f8f9fa;
+        color: #000;
+    }
+    
+    .accordion-button:focus {
+        box-shadow: none;
+        border-color: rgba(0,0,0,.125);
+    }
+    
+    .list-group-item {
+        border-left: 3px solid #dee2e6;
+    }
+    
+    .list-group-item:hover {
+        background-color: #f8f9fa;
+    }
+    
+    .progress {
+        border-radius: 10px;
+    }
+</style>
+
+{% block scripts %}
+<script src="{% static 'assignments/js/assignments.js' %}"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Add countdown timer for due date
+    const dueDate = new Date('{{ assignment.due_date|date:"c" }}');
+    const now = new Date();
+    
+    if (dueDate > now && !{{ is_trainer|yesno:"true,false" }} && !{{ student_submission|yesno:"true,false" }}) {
+        // Update timer every minute
+        setInterval(updateCountdown, 60000);
+        updateCountdown();
+    }
+    
+    function updateCountdown() {
+        const now = new Date();
+        const timeLeft = dueDate - now;
+        
+        if (timeLeft <= 0) {
+            document.getElementById('countdown').textContent = 'Time expired';
+            return;
+        }
+        
+        const days = Math.floor(timeLeft / (1000 * 60 * 60 * 24));
+        const hours = Math.floor((timeLeft % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((timeLeft % (1000 * 60 * 60)) / (1000 * 60));
+        
+        let countdownText = '';
+        if (days > 0) countdownText += `${days}d `;
+        if (hours > 0) countdownText += `${hours}h `;
+        countdownText += `${minutes}m left`;
+        
+        document.getElementById('countdown').textContent = countdownText;
+    }
+});
+</script>
+
+{% endblock %}

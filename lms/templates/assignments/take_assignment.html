@@ -1,0 +1,194 @@
+<!-- templates/assignments/take_assignment.html -->
+{% extends 'base.html' %}
+
+{% block title %}Take Assignment - {{ assignment.title }} - LMS{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h2 class="mb-0">{{ assignment.title }}</h2>
+            <p class="mb-0">{{ assignment.description }}</p>
+        </div>
+        <div class="card-body">
+            <div class="alert alert-info">
+                <i class="fas fa-info-circle"></i>
+                <strong>Instructions:</strong> 
+                {% if assignment.assignment_type == 'multiple_choice' %}
+                    Select the correct answer for each question.
+                {% else %}
+                    Type your answer in the text boxes provided.
+                {% endif %}
+                Total questions: {{ question_forms|length }}
+            </div>
+
+            <form method="post" id="assignmentForm">
+                {% csrf_token %}
+                
+                {% for question, form in question_forms %}
+                <div class="card mb-4 question-card">
+                    <div class="card-header">
+                        <h5>Question {{ forloop.counter }} ({{ question.marks }} marks)</h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{ question.question_text }}</p>
+                        
+                        {% if assignment.assignment_type == 'multiple_choice' %}
+                            {% if form.selected_choice %}
+                                {% for choice in form.selected_choice.field.queryset %}
+                                <div class="form-check mb-2">
+                                    <input class="form-check-input" type="radio" 
+                                           name="{{ form.selected_choice.html_name }}"
+                                           value="{{ choice.id }}"
+                                           id="choice{{ choice.id }}_{{ forloop.parentloop.counter }}"
+                                           {% if form.selected_choice.value == choice.id %}checked{% endif %}
+                                           required>
+                                    <label class="form-check-label" for="choice{{ choice.id }}_{{ forloop.parentloop.counter }}">
+                                        {{ choice.choice_text }}
+                                    </label>
+                                </div>
+                                {% endfor %}
+                            {% else %}
+                                <p class="text-danger">No choices available for this question.</p>
+                            {% endif %}
+                        {% else %}
+                            {% if form.answer_text %}
+                                <textarea name="{{ form.answer_text.html_name }}" 
+                                          class="form-control" 
+                                          rows="4"
+                                          placeholder="Type your answer here..."
+                                          required>{% if form.answer_text.value %}{{ form.answer_text.value }}{% endif %}</textarea>
+                            {% else %}
+                                <p class="text-danger">Answer field not available.</p>
+                            {% endif %}
+                        {% endif %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger mt-2">
+                            {% for error in form.non_field_errors %}
+                            {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                
+                <div class="text-center mt-4">
+                    <button type="submit" class="btn btn-primary btn-lg">
+                        <i class="fas fa-paper-plane"></i> Submit Assignment
+                    </button>
+                    <a href="{% url 'assignment_detail' assignment.pk %}" class="btn btn-secondary btn-lg ms-2">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-check-input {
+        margin-top: 0.3rem;
+    }
+    
+    textarea {
+        resize: vertical;
+        min-height: 100px;
+    }
+    
+    .question-card {
+        border-left: 4px solid #0d6efd;
+        transition: border-left-color 0.3s ease;
+    }
+    
+    .question-card.answered {
+        border-left-color: #198754;
+    }
+    
+    .question-card.unanswered {
+        border-left-color: #dc3545;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('assignmentForm');
+    const questionCards = document.querySelectorAll('.question-card');
+    const isMultipleChoice = {{ assignment.assignment_type == 'multiple_choice'|yesno:"true,false" }};
+    
+    // Add validation to ensure all questions are answered
+    form.addEventListener('submit', function(e) {
+        let allAnswered = true;
+        
+        questionCards.forEach((question, index) => {
+            let answered = false;
+            
+            if (isMultipleChoice) {
+                const radios = question.querySelectorAll('input[type="radio"]');
+                answered = Array.from(radios).some(radio => radio.checked);
+            } else {
+                const textarea = question.querySelector('textarea');
+                answered = textarea && textarea.value.trim() !== '';
+            }
+            
+            if (answered) {
+                question.classList.add('answered');
+                question.classList.remove('unanswered');
+            } else {
+                allAnswered = false;
+                question.classList.add('unanswered');
+                question.classList.remove('answered');
+                
+                // Add error styling for text areas
+                if (!isMultipleChoice) {
+                    const textarea = question.querySelector('textarea');
+                    if (textarea) {
+                        textarea.classList.add('is-invalid');
+                    }
+                }
+            }
+        });
+        
+        if (!allAnswered) {
+            e.preventDefault();
+            alert('Please answer all questions before submitting.');
+            
+            // Scroll to first unanswered question
+            const firstUnanswered = document.querySelector('.question-card.unanswered');
+            if (firstUnanswered) {
+                firstUnanswered.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            }
+        }
+    });
+    
+    // Real-time validation for text areas
+    if (!isMultipleChoice) {
+        const textareas = document.querySelectorAll('textarea');
+        textareas.forEach(textarea => {
+            textarea.addEventListener('input', function() {
+                if (this.value.trim()) {
+                    this.classList.remove('is-invalid');
+                    this.closest('.question-card').classList.add('answered');
+                    this.closest('.question-card').classList.remove('unanswered');
+                } else {
+                    this.closest('.question-card').classList.remove('answered');
+                }
+            });
+        });
+    }
+    
+    // Real-time validation for radio buttons
+    if (isMultipleChoice) {
+        const radios = document.querySelectorAll('input[type="radio"]');
+        radios.forEach(radio => {
+            radio.addEventListener('change', function() {
+                const questionCard = this.closest('.question-card');
+                questionCard.classList.add('answered');
+                questionCard.classList.remove('unanswered');
+            });
+        });
+    }
+});
+</script>
+{% endblock %}

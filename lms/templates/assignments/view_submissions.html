@@ -1,0 +1,161 @@
+<!-- templates/assignments/view_submissions.html -->
+{% extends 'base.html' %}
+
+{% block title %}Submissions - {{ assignment.title }} - LMS{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-12">
+            <!-- Header -->
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <div>
+                    <h2>Submissions for: {{ assignment.title }}</h2>
+                    <p class="text-muted mb-0">{{ submissions.count }} submission(s)</p>
+                </div>
+                <a href="{% url 'assignments' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left"></i> Back to Assignments
+                </a>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row mb-4">
+                <div class="col-md-3">
+                    <div class="card text-center bg-primary text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ submissions.count }}</h5>
+                            <p class="card-text">Total Submissions</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center bg-success text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ graded_count }}</h5>
+                            <p class="card-text">Graded</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center bg-warning text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ pending_count }}</h5>
+                            <p class="card-text">Pending Grading</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-3">
+                    <div class="card text-center bg-info text-white">
+                        <div class="card-body">
+                            <h5 class="card-title">{{ average_grade|default:0 }}</h5>
+                            <p class="card-text">Average Grade</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Submissions Table -->
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Student Submissions</h5>
+                        <div class="btn-group">
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="fas fa-download"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+                    {% if submissions %}
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Student</th>
+                                    <th>Submitted At</th>
+                                    <th>Status</th>
+                                    <th>Marks Obtained</th>
+                                    <th>Grade</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for submission in submissions %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ submission.student.get_full_name|default:submission.student.username }}</strong>
+                                        <br>
+                                        <small class="text-muted">{{ submission.student.email }}</small>
+                                    </td>
+                                    <td>{{ submission.submitted_at|date:"M d, Y H:i" }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if submission.is_graded %}success{% else %}warning{% endif %}">
+                                            {% if submission.is_graded %}Graded{% else %}Pending{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {{ submission.total_marks_obtained }}/{{ assignment.total_marks }}
+                                    </td>
+                                    <td>
+                                        {% if submission.is_graded %}
+                                        {% widthratio submission.total_marks_obtained assignment.total_marks 100 as grade %}
+                                        <span class="badge bg-{% if grade >= 80 %}success{% elif grade >= 50 %}warning{% else %}danger{% endif %}">
+                                            {{ grade }}%
+                                        </span>
+                                        {% else %}
+                                        <span class="text-muted">-</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{% url 'grade_submission' assignment.pk submission.student.id %}" 
+                                               class="btn btn-{% if submission.is_graded %}outline-primary{% else %}primary{% endif %}">
+                                                <i class="fas fa-{% if submission.is_graded %}eye{% else %}check{% endif %}"></i>
+                                                {% if submission.is_graded %}View{% else %}Grade{% endif %}
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <h5>No Submissions Yet</h5>
+                        <p class="text-muted">Students haven't submitted this assignment yet.</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Assignment Info -->
+            <div class="card mt-4">
+                <div class="card-header">
+                    <h5 class="mb-0">Assignment Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Due Date:</strong> {{ assignment.due_date|date:"M d, Y H:i" }}</p>
+                            <p><strong>Total Marks:</strong> {{ assignment.total_marks }}</p>
+                            <p><strong>Questions:</strong> {{ assignment.questions.count }}</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Type:</strong> {{ assignment.get_assignment_type_display }}</p>
+                            <p><strong>Created:</strong> {{ assignment.created_at|date:"M d, Y" }}</p>
+                            <p><strong>Status:</strong> 
+                                <span class="badge bg-{% if assignment.is_published %}success{% else %}secondary{% endif %}">
+                                    {% if assignment.is_published %}Published{% else %}Draft{% endif %}
+                                </span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

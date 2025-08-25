@@ -83,9 +83,5 @@ def timetable_view(request):
 
 
 @login_required
-def assignments_view(request):
-    return render(request, 'assignments.html')
-
-@login_required
 def cats_view(request):
     return render(request, 'cats.html')
