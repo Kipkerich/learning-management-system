@@ -77,9 +77,6 @@ def user_list_view(request):
     
     return render(request, 'accounts/user_list.html', context)
 
-@login_required
-def timetable_view(request):
-    return render(request, 'timetable.html')
 
 
 @login_required
