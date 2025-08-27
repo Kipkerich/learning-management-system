@@ -49,57 +49,36 @@
                         <h5 class="mb-0">Student Answers</h5>
                     </div>
                     <div class="card-body">
-                        {% for answer in answers %}
-                        <div class="card mb-3">
-                            <div class="card-header bg-light">
-                                <h6 class="mb-0">Question {{ forloop.counter }} ({{ answer.question.marks }} marks)</h6>
+                       {% for answer in answers %}
+                    <div class="card mb-3">
+                        <div class="card-header bg-light">
+                            <h6 class="mb-0">Question {{ forloop.counter }} ({{ answer.question.marks }} marks)</h6>
+                        </div>
+                        <div class="card-body">
+                            <!-- ... student's answer display ... -->
+                            
+                            {% if assignment.assignment_type == 'text_input' %}
+                            <div class="form-group">
+                                <label class="form-label">Marks Awarded (0-{{ answer.question.marks }})</label>
+                                <input type="number" class="form-control" name="marks_{{ answer.question.id }}"
+                                    min="0" max="{{ answer.question.marks }}" 
+                                    value="{% if answer.marks_awarded is not None %}{{ answer.marks_awarded }}{% else %}0{% endif %}"
+                                    required>
                             </div>
-                            <div class="card-body">
-                                <p class="fw-bold">{{ answer.question.question_text }}</p>
-                                
-                                <!-- Student's Answer -->
-                                <div class="mb-3 p-3 bg-light rounded">
-                                    <h6>Student's Answer:</h6>
-                                    {% if assignment.assignment_type == 'multiple_choice' %}
-                                        {% if answer.selected_choice %}
-                                        <p class="mb-0">
-                                            {{ answer.selected_choice.choice_text }}
-                                            {% if answer.selected_choice.is_correct %}
-                                            <span class="badge bg-success ms-2">Correct</span>
-                                            {% else %}
-                                            <span class="badge bg-danger ms-2">Incorrect</span>
-                                            {% endif %}
-                                        </p>
-                                        {% else %}
-                                        <p class="text-muted mb-0">No answer provided</p>
-                                        {% endif %}
-                                    {% else %}
-                                        <p class="mb-0">{{ answer.answer_text|default:"No answer provided" }}</p>
-                                    {% endif %}
-                                </div>
-
-                                <!-- Grading Section -->
-                                {% if assignment.assignment_type == 'multiple_choice' %}
-                                <div class="alert alert-info">
-                                    <i class="fas fa-info-circle"></i>
-                                    Multiple choice questions are automatically graded.
-                                    {% if answer.selected_choice and answer.selected_choice.is_correct %}
-                                    <strong>Score: {{ answer.question.marks }}/{{ answer.question.marks }}</strong>
-                                    {% else %}
-                                    <strong>Score: 0/{{ answer.question.marks }}</strong>
-                                    {% endif %}
-                                </div>
+                            {% else %}
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle"></i>
+                                Multiple choice questions are automatically graded.
+                                {% if answer.selected_choice and answer.selected_choice.is_correct %}
+                                <strong>Score: {{ answer.question.marks }}/{{ answer.question.marks }}</strong>
                                 {% else %}
-                                <div class="mb-3">
-                                    <label class="form-label">Marks Awarded (0-{{ answer.question.marks }})</label>
-                                    <input type="number" class="form-control" name="marks_{{ answer.question.id }}"
-                                           min="0" max="{{ answer.question.marks }}" 
-                                           value="{% if answer.selected_choice and answer.selected_choice.is_correct %}{{ answer.question.marks }}{% else %}0{% endif %}">
-                                </div>
+                                <strong>Score: 0/{{ answer.question.marks }}</strong>
                                 {% endif %}
                             </div>
+                            {% endif %}
                         </div>
-                        {% endfor %}
+                    </div>
+            {% endfor %}
 
                         <!-- Total Score -->
                         <div class="card bg-light">

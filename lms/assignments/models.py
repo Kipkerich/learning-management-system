@@ -82,7 +82,17 @@ class StudentAssignment(models.Model):
         )
         total = 0
         for answer in answers:
-            if answer.selected_choice and answer.selected_choice.is_correct:
-                total += answer.question.marks
+            if self.assignment.assignment_type == 'multiple_choice':
+                # Multiple choice - automatic grading
+                if answer.selected_choice and answer.selected_choice.is_correct:
+                    total += answer.question.marks
+            else:
+                # Text input - use manually awarded marks
+                if hasattr(answer, 'marks_awarded') and answer.marks_awarded is not None:
+                    total += answer.marks_awarded
+                else:
+                    # If not graded yet, don't add anything
+                    total += 0
+        
         self.total_marks_obtained = total
-        self.save()
+        return total

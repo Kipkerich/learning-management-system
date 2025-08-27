@@ -1,8 +1,8 @@
 # assignments/views.py
 from django.shortcuts import render, get_object_or_404, redirect
-from django.contrib.auth.decorators import login_required
+from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib import messages
-from django.http import JsonResponse
+from django.http import JsonResponse, Http404
 from django.utils import timezone
 from .models import Assignment, Question, StudentAnswer, StudentAssignment
 from .forms import AssignmentForm, QuestionForm, ChoiceFormSet, StudentAnswerForm
@@ -165,7 +165,9 @@ def create_assignment(request):
     context = {'form': form}
     return render(request, 'assignments/create_assignment.html', context)
 
+# assignments/views.py
 @login_required
+@user_passes_test(is_trainer)
 def add_questions(request, pk):
     if not is_trainer(request.user):
         messages.error(request, "Only trainers can add questions.")
@@ -184,16 +186,22 @@ def add_questions(request, pk):
                 formset = ChoiceFormSet(request.POST, instance=question)
                 if formset.is_valid():
                     formset.save()
+                else:
+                    # If formset is invalid, you might want to handle this
+                    messages.error(request, 'Please provide valid multiple choice options.')
             
             messages.success(request, 'Question added successfully!')
             return redirect('add_questions', pk=assignment.pk)
     else:
         question_form = QuestionForm()
+        # Initialize empty formset for GET requests
+        formset = ChoiceFormSet(instance=Question()) if assignment.assignment_type == 'multiple_choice' else None
     
     questions = assignment.questions.all()
     context = {
         'assignment': assignment,
         'question_form': question_form,
+        'choice_formset': formset,  # Pass the formset to context
         'questions': questions,
     }
     return render(request, 'assignments/add_questions.html', context)
@@ -213,6 +221,7 @@ def view_submissions(request, pk):
     }
     return render(request, 'assignments/view_submissions.html', context)
 
+# assignments/views.py
 @login_required
 def grade_submission(request, pk, student_id):
     if not is_trainer(request.user):
@@ -224,10 +233,30 @@ def grade_submission(request, pk, student_id):
     answers = StudentAnswer.objects.filter(assignment=assignment, student_id=student_id)
     
     if request.method == 'POST':
+        # Process manual grading for text input questions
+        if assignment.assignment_type == 'text_input':
+            for answer in answers:
+                marks_field = f"marks_{answer.question.id}"
+                if marks_field in request.POST:
+                    try:
+                        marks_awarded = int(request.POST[marks_field])
+                        # Validate marks don't exceed question marks
+                        if 0 <= marks_awarded <= answer.question.marks:
+                            answer.marks_awarded = marks_awarded
+                            answer.save()
+                    except (ValueError, TypeError):
+                        # If invalid input, set to 0
+                        answer.marks_awarded = 0
+                        answer.save()
+        
+        # Update feedback and grading status
         submission.feedback = request.POST.get('feedback', '')
         submission.is_graded = True
+        
+        # Calculate the total score
         submission.calculate_score()
         submission.save()
+        
         messages.success(request, 'Submission graded successfully!')
         return redirect('view_submissions', pk=assignment.pk)
     
@@ -237,3 +266,15 @@ def grade_submission(request, pk, student_id):
         'answers': answers,
     }
     return render(request, 'assignments/grade_submission.html', context)
+
+@login_required
+@user_passes_test(is_trainer)
+def publish_assignment(request, pk):
+    assignment = get_object_or_404(Assignment, pk=pk, created_by=request.user)
+    
+    if request.method == 'POST':
+        assignment.is_published = True
+        assignment.save()
+        messages.success(request, 'Assignment published successfully!')
+    
+    return redirect('assignment_detail', pk=assignment.pk)

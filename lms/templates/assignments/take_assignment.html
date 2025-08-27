@@ -99,6 +99,7 @@
     
     .question-card {
         border-left: 4px solid #0d6efd;
+        margin-bottom: 0.5rem;
         transition: border-left-color 0.3s ease;
     }
     
@@ -115,7 +116,9 @@
 document.addEventListener('DOMContentLoaded', function() {
     const form = document.getElementById('assignmentForm');
     const questionCards = document.querySelectorAll('.question-card');
-    const isMultipleChoice = {{ assignment.assignment_type == 'multiple_choice'|yesno:"true,false" }};
+    
+    // Check if this is a multiple choice assignment
+    const isMultipleChoice = {% if assignment.assignment_type == 'multiple_choice' %}true{% else %}false{% endif %};
     
     // Add validation to ensure all questions are answered
     form.addEventListener('submit', function(e) {

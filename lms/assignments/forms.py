@@ -27,7 +27,8 @@ class ChoiceForm(forms.ModelForm):
         }
 
 ChoiceFormSet = forms.inlineformset_factory(
-    Question, Choice, form=ChoiceForm, extra=4, max_num=6, can_delete=True
+    Question, Choice, form=ChoiceForm, extra=4, max_num=6, can_delete=True,
+    fields=['choice_text', 'is_correct']
 )
 
 class StudentAnswerForm(forms.ModelForm):
