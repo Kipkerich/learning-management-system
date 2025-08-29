@@ -96,7 +96,7 @@
                     Awaiting Grading
                     {% endif %}
                 </span>
-                {% elif now  assignment.due_date %}
+                {% elif now <= assignment.due_date %}
                 <a href="{% url 'take_assignment' assignment.pk %}" class="btn btn-primary">
                     <i class="fas fa-pencil-alt"></i> Take Assignment
                 </a>

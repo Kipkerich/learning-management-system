@@ -6,6 +6,10 @@ from .api_views import UserProfileDetail, UserProfileUpdate
 urlpatterns = [
     path('admin/register/', views.admin_register_view, name='admin_register'),
     path('admin/users/', views.user_list_view, name='user_list'),
+    path('admin/users/<int:pk>/', views.user_detail_view, name='user_detail'),
+    path('admin/users/<int:pk>/edit/', views.edit_user_view, name='edit_user'),
+    path('admin/users/<int:pk>/delete/', views.delete_user_view, name='delete_user'),
+    path('admin/users/<int:pk>/toggle-status/', views.toggle_user_status_view, name='toggle_user_status'),
     path('login/', auth_views.LoginView.as_view(template_name='accounts/login.html'), name='login'),
     path('', views.dashboard_view, name='dashboard'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
