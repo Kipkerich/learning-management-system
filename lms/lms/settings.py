@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-7tt^ay89=wv14ux2^75guv$zqx%=wh#vgo)n+&2g7=&-^^0-t8
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['kipkerich.pythonanywhere.com', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['username.pythonanywhere.com', 'localhost', '127.0.0.1']
 
 
 CSRF_COOKIE_SECURE = True
@@ -89,10 +89,10 @@ WSGI_APPLICATION = 'lms.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'kipkericg$lms_db',
-        'USER': 'kipkerich',
-        'PASSWORD': 'Password@254',  
-        'HOST': 'kipkerich.mysql.pythonanywhere-services.com',
+        'NAME': 'username$lms_db',
+        'USER': 'username',
+        'PASSWORD': 'your-mysql-password',  
+        'HOST': 'username.mysql.pythonanywhere-services.com',
         'OPTIONS': {
             'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
         },
