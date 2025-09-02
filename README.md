@@ -110,53 +110,68 @@ A comprehensive Django-based Learning Management System designed for educational
 
 ```
 lms/
-├── accounts/                 # Authentication app
-│   ├── models.py            # User profile models
-│   ├── views.py             # Auth views and profile management
-│   ├── forms.py             # User registration and profile forms
-│   ├── urls.py              # Authentication routes
-│   └── templates/           # Auth templates
+├── accounts/                 
+│   ├── models.py            
+│   ├── views.py             
+│   ├── forms.py             
+│   ├── urls.py              
+│   ├── templates/           
+│   └── accounts_tests/
+│       ├── __init__.py 
+│       └── test_api.py  
 │
-├── assignments/             # Assignment management app
-│   ├── models.py            # Assignment, Question, Submission models
-│   ├── views.py             # Assignment creation and grading views
-│   ├── forms.py             # Assignment and question forms
-│   ├── urls.py              # Assignment routes
-│   └── templates/           # Assignment templates
+├── assignments/             
+│   ├── models.py            
+│   ├── views.py             
+│   ├── forms.py             
+│   ├── urls.py              
+│   ├── templates/           
+│   └── assignments_tests/
+│       ├── __init__.py
+│       ├── test_urls.py
+│       └── test_views_smoke.py
 │
-├── timetable/               # Timetable management app
-│   ├── models.py            # Schedule and recurrence models
-│   ├── views.py             # Timetable CRUD operations
-│   ├── forms.py             # Schedule forms with recurrence
-│   ├── urls.py              # Timetable routes
-│   └── templates/           # Timetable templates
+├── timetable/               
+│   ├── models.py            
+│   ├── views.py             
+│   ├── forms.py             
+│   ├── urls.py              
+│   ├── templates/           
+│   └── timetable_tests/
+│       ├── __init__.py
+│       ├── test_urls.py
+│       └── test_views_smoke.py
 │
-├── resources/               # Resource management app
-│   ├── models.py            # Resource model
-│   ├── views.py             # Resource upload and management
-│   ├── forms.py             # Resource forms
-│   ├── urls.py              # Resource routes
-│   └── templates/           # Resource templates
+├── resources/               
+│   ├── models.py            
+│   ├── views.py             
+│   ├── forms.py             
+│   ├── urls.py              
+│   ├── templates/           
+│   └── resources_tests/
+│       ├── __init__.py
+│       ├── test_urls.py
+│       └── test_views_smoke.py
 │
-├── lms/                     # Project configuration
-│   ├── settings.py          # Django settings
-│   ├── urls.py              # Main URL routing
-│   └── wsgi.py              # WSGI configuration
+├── lms/                     
+│   ├── settings.py          
+│   ├── urls.py              
+│   └── wsgi.py              
 │
-├── templates/               # Base templates
-│   ├── base.html            # Main template
-    ├── cats.html            # CAT template
-│   └── dashboard.html       # Dashboard template
+├── templates/               
+│   ├── base.html            
+│   ├── cats.html            
+│   └── dashboard.html       
 │
-├── static/                  # Static files
-│   ├── css/                 # Global styles
-│   ├── js/                  # Global JavaScript
-│   └── images/              # Images and assets
+├── static/                  
+│   ├── css/                 
+│   ├── js/                  
+│   └── images/              
 │
-├── media/                   # Uploaded files (created automatically)
-├── requirements.txt         # Python dependencies
-└── manage.py               # Django management script
-```
+├── media/                   
+├── requirements.txt         
+└── manage.py
+
 
 ## 👥 User Roles
 

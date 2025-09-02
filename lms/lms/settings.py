@@ -12,6 +12,8 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 
 from pathlib import Path
 import os
+from decouple import config
+from pathlib import Path
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -20,20 +22,31 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
-# SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-7tt^ay89=wv14ux2^75guv$zqx%=wh#vgo)n+&2g7=&-^^0-t8'
+# Environment flag (development / production)
+ENV = config("DJANGO_ENV", default="development")
 
-# SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
-
-ALLOWED_HOSTS = ['username.pythonanywhere.com', 'localhost', '127.0.0.1']
+# SECURITY WARNING: keep the secret key secret!
+SECRET_KEY = config("SECRET_KEY", default="dev-secret-key")
 
 
-CSRF_COOKIE_SECURE = True
-SESSION_COOKIE_SECURE = True
-SECURE_SSL_REDIRECT = True
+DEBUG = config("DEBUG", default=True, cast=bool)
 
+# Allowed hosts
+if ENV == "production":
+    ALLOWED_HOSTS = config("DJANGO_ALLOWED_HOSTS",).split(",")
+else:
+    ALLOWED_HOSTS = ["127.0.0.1", "localhost"]
 
+if ENV == "production":
+    # Production security
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+else:
+    # Development (HTTP only)
+    SECURE_SSL_REDIRECT = False
+    SESSION_COOKIE_SECURE = False
+    CSRF_COOKIE_SECURE = False
 # Application definition
 
 INSTALLED_APPS = [
@@ -86,18 +99,28 @@ WSGI_APPLICATION = 'lms.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'username$lms_db',
-        'USER': 'username',
-        'PASSWORD': 'your-mysql-password',  
-        'HOST': 'username.mysql.pythonanywhere-services.com',
-        'OPTIONS': {
-            'init_command': "SET sql_mode='STRICT_TRANS_TABLES'",
-        },
+# Environment flag: "production" or "development"
+ENV = config("DJANGO_ENV", default="development")
+
+if ENV == "production":
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.mysql',
+            'NAME': config("DB_NAME"),
+            'USER': config("DB_USER"),
+            'PASSWORD': config("DB_PASSWORD"),
+            'HOST': config("DB_HOST", default="localhost"),
+            'PORT': config("DB_PORT", default="3306"),
+        }
     }
-}
+else:  # Development → SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / "db.sqlite3",
+        }
+    }
+
 
 
 # Password validation
