@@ -6,14 +6,71 @@
 <div class="container mt-4">
     <div class="row">
         <div class="col-md-8 mx-auto">
-            <div class="card">
-                <div class="card-header">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
                     <h3 class="mb-0">Create New Schedule</h3>
                 </div>
                 <div class="card-body">
                     <form method="post">
                         {% csrf_token %}
-                        {{ form.as_p }}
+                        
+                        <div class="mb-3">
+                            {{ form.date.label_tag }}
+                            {{ form.date }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.extra_dates.label_tag }}
+                            {{ form.extra_dates }}
+                            <small class="form-text text-muted">
+                                Example: 2025-09-10, 2025-09-17, 2025-09-25
+                            </small>
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.start_time.label_tag }}
+                            {{ form.start_time }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.end_time.label_tag }}
+                            {{ form.end_time }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.subject.label_tag }}
+                            {{ form.subject }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.trainer.label_tag }}
+                            {{ form.trainer }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.location.label_tag }}
+                            {{ form.location }}
+                        </div>
+                        
+                        <div class="mb-3">
+                            {{ form.description.label_tag }}
+                            {{ form.description }}
+                        </div>
+                        
+                        <div class="form-check mb-3">
+                            {{ form.is_published }}
+                            {{ form.is_published.label_tag }}
+                        </div>
+
+                        <!-- New repeat count field -->
+                        <div class="mb-3">
+                            {{ form.repeat_count.label_tag }}
+                            {{ form.repeat_count }}
+                            <small class="form-text text-muted">
+                                E.g., 4 = repeat weekly for 4 weeks starting from selected date.
+                            </small>
+                        </div>
+                        
                         <div class="d-grid gap-2 d-md-flex justify-content-md-end">
                             <a href="{% url 'timetable' %}" class="btn btn-secondary me-md-2">Cancel</a>
                             <button type="submit" class="btn btn-primary">Create Schedule</button>

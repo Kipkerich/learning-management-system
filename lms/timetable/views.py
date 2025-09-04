@@ -5,6 +5,8 @@ from django.contrib import messages
 from django.http import JsonResponse
 from .models import Timetable
 from .forms import TimetableForm
+from datetime import timedelta
+from django.utils import timezone
 
 def is_admin(user):
     return user.is_superuser
@@ -50,14 +52,35 @@ def create_timetable(request):
     if request.method == 'POST':
         form = TimetableForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Timetable entry created successfully!')
+            timetable = form.save()
+
+            # Handle multiple extra dates
+            extra_dates_str = form.cleaned_data.get('extra_dates', '')
+            if extra_dates_str:
+                extra_dates = [d.strip() for d in extra_dates_str.split(',')]
+                for d in extra_dates:
+                    try:
+                        parsed_date = datetime.strptime(d, "%Y-%m-%d").date()
+                        Timetable.objects.create(
+                            date=parsed_date,
+                            start_time=timetable.start_time,
+                            end_time=timetable.end_time,
+                            subject=timetable.subject,
+                            trainer=timetable.trainer,
+                            location=timetable.location,
+                            description=timetable.description,
+                            is_published=timetable.is_published,
+                        )
+                    except ValueError:
+                        continue  # skip invalid dates
+
+            messages.success(request, 'Timetable entry (and extra dates) created successfully!')
             return redirect('timetable')
     else:
         form = TimetableForm()
-    
-    context = {'form': form}
-    return render(request, 'timetable/create_timetable.html', context)
+
+    return render(request, 'timetable/create_timetable.html', {'form': form})
+
 
 @login_required
 @user_passes_test(is_admin)
@@ -94,15 +117,14 @@ def delete_timetable(request, pk):
 def timetable_json(request):
     timetables = Timetable.objects.filter(is_published=True)
     data = []
-    
+
     for timetable in timetables:
         data.append({
             'title': f"{timetable.subject} - {timetable.trainer.get_full_name()}",
-            'start': f"2024-01-01T{timetable.start_time}",  # Date is placeholder
-            'end': f"2024-01-01T{timetable.end_time}",
-            'day': timetable.day,
+            'start': f"{timetable.date}T{timetable.start_time}",
+            'end': f"{timetable.date}T{timetable.end_time}",
             'location': timetable.location,
             'description': timetable.description,
         })
-    
+
     return JsonResponse(data, safe=False)
