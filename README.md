@@ -289,8 +289,21 @@ DATABASES = {
 - [ ] Set up backup system for database
 - [ ] Configure logging for production environment
 
-### Deployment Option
-- **PythonAnywhere**: Easy Django hosting solution
+### Deployment 
+**PythonAnywhere**: Easy Django hosting solution
+URL : kipkerich.pythonanywhere.com
+Login Credentials;
+ 1. ADMIN
+ Username - admin
+ Password - SUper@123
+
+ 2. Trainer
+ Username - trainer
+ Password - Teacher@123
+
+ 3. Student
+ Username - student
+ Password - Pupil@123
 
 ## 🤝 Contributing
 
