@@ -8,51 +8,49 @@ from .forms import ResourceForm
 def is_trainer(user):
     return hasattr(user, 'userprofile') and user.userprofile.user_type == 'trainer'
 
+
 @login_required
 def resources_view(request):
-    resources = Resource.objects.filter(is_published=True)
-    
-    # Trainers can see all resources, students see only published ones
-    if is_trainer(request.user):
-        resources = Resource.objects.all()
-    
-    context = {
+    user_is_trainer = is_trainer(request.user)
+    resources = Resource.objects.all() if user_is_trainer else Resource.objects.filter(is_published=True)
+    return render(request, 'resources/resources.html', {
         'resources': resources,
-        'is_trainer': is_trainer(request.user)
-    }
-    return render(request, 'resources/resources.html', context)
+        'is_trainer': user_is_trainer
+    })
+
 
 @login_required
 def resource_detail(request, pk):
     resource = get_object_or_404(Resource, pk=pk)
-    
-    # Check if resource is published or user is trainer
+
     if not resource.is_published and not is_trainer(request.user):
         raise Http404("Resource not found")
-    
-    context = {
+
+    return render(request, 'resources/resource_detail.html', {
         'resource': resource,
         'is_trainer': is_trainer(request.user)
-    }
-    return render(request, 'resources/resource_detail.html', context)
+    })
+
 
 @login_required
 def download_resource(request, pk):
     resource = get_object_or_404(Resource, pk=pk)
-    
+
     if resource.file:
         response = FileResponse(resource.file.open(), as_attachment=True)
         response['Content-Disposition'] = f'attachment; filename="{resource.filename()}"'
         return response
-    else:
-        raise Http404("No file available for download")
+    
+    messages.error(request, "No file available for download.")
+    return redirect('resources')
+
 
 @login_required
 def add_resource(request):
     if not is_trainer(request.user):
         messages.error(request, "Only trainers can add resources.")
         return redirect('resources')
-    
+
     if request.method == 'POST':
         form = ResourceForm(request.POST, request.FILES)
         if form.is_valid():
@@ -63,18 +61,18 @@ def add_resource(request):
             return redirect('resources')
     else:
         form = ResourceForm()
-    
-    context = {'form': form}
-    return render(request, 'resources/add_resource.html', context)
+
+    return render(request, 'resources/add_resource.html', {'form': form})
+
 
 @login_required
 def edit_resource(request, pk):
     if not is_trainer(request.user):
         messages.error(request, "Only trainers can edit resources.")
         return redirect('resources')
-    
+
     resource = get_object_or_404(Resource, pk=pk, uploaded_by=request.user)
-    
+
     if request.method == 'POST':
         form = ResourceForm(request.POST, request.FILES, instance=resource)
         if form.is_valid():
@@ -83,22 +81,24 @@ def edit_resource(request, pk):
             return redirect('resource_detail', pk=resource.pk)
     else:
         form = ResourceForm(instance=resource)
-    
-    context = {'form': form, 'resource': resource}
-    return render(request, 'resources/edit_resource.html', context)
+
+    return render(request, 'resources/edit_resource.html', {
+        'form': form,
+        'resource': resource
+    })
+
 
 @login_required
 def delete_resource(request, pk):
     if not is_trainer(request.user):
         messages.error(request, "Only trainers can delete resources.")
         return redirect('resources')
-    
+
     resource = get_object_or_404(Resource, pk=pk, uploaded_by=request.user)
-    
+
     if request.method == 'POST':
         resource.delete()
         messages.success(request, 'Resource deleted successfully!')
         return redirect('resources')
-    
-    context = {'resource': resource}
-    return render(request, 'resources/delete_resource.html', context)
+
+    return render(request, 'resources/delete_resource.html', {'resource': resource})

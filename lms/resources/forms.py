@@ -6,7 +6,12 @@ class ResourceForm(forms.ModelForm):
         model = Resource
         fields = ['title', 'description', 'resource_type', 'file', 'url', 'is_published']
         widgets = {
-            'description': forms.Textarea(attrs={'rows': 4}),
+            'title': forms.TextInput(attrs={'class': 'form-control'}),
+            'description': forms.Textarea(attrs={'class': 'form-control', 'rows': 4}),
+            'resource_type': forms.Select(attrs={'class': 'form-select'}),
+            'file': forms.ClearableFileInput(attrs={'class': 'form-control'}),
+            'url': forms.URLInput(attrs={'class': 'form-control'}),
+            'is_published': forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         }
 
     def clean(self):
