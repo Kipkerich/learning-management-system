@@ -2,6 +2,7 @@ from django.urls import path
 from . import views
 from django.contrib.auth import views as auth_views
 from .api_views import UserProfileDetail, UserProfileUpdate
+from rest_framework.authtoken.views import obtain_auth_token 
 
 urlpatterns = [
     path('admin/register/', views.admin_register_view, name='admin_register'),
@@ -18,4 +19,5 @@ urlpatterns = [
     path('api/profile/update/', UserProfileUpdate.as_view(), name='api_profile_update'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('cats/', views.cats_view, name='cats'),
+    path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
 ]
