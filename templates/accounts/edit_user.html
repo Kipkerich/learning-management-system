@@ -1,0 +1,199 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit User - {{ user.username }} - LMS{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="mb-0">Edit User: {{ user.username }}</h3>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <!-- Basic Information -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Basic Information</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">Username *</label>
+                                        <input type="text" class="form-control" name="username" 
+                                               value="{{ user.username }}" required>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" name="email" 
+                                               value="{{ user.email|default:'' }}">
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">First Name</label>
+                                        <input type="text" class="form-control" name="first_name" 
+                                               value="{{ user.first_name|default:'' }}">
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Last Name</label>
+                                        <input type="text" class="form-control" name="last_name" 
+                                               value="{{ user.last_name|default:'' }}">
+                                    </div>
+                                </div>
+
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">User Type *</label>
+                                        <select class="form-select" name="user_type" required>
+                                            <option value="student" {% if user.userprofile.user_type == 'student' %}selected{% endif %}>Student</option>
+                                            <option value="trainer" {% if user.userprofile.user_type == 'trainer' %}selected{% endif %}>Trainer</option>
+                                            <option value="admin" {% if user.userprofile.user_type == 'admin' %}selected{% endif %}>Admin</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Status</label>
+                                        <div class="form-check form-switch mt-2">
+                                            <input class="form-check-input" type="checkbox" name="is_active" 
+                                                   {% if user.is_active %}checked{% endif %} style="transform: scale(1.5);">
+                                            <label class="form-check-label">Active Account</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Password Change Section -->
+                        <div class="card mb-4">
+                            <div class="card-header">
+                                <h5 class="mb-0">Change Password</h5>
+                            </div>
+                            <div class="card-body">
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle"></i>
+                                    Leave these fields blank to keep the current password.
+                                </div>
+                                
+                                <div class="row mb-3">
+                                    <div class="col-md-6">
+                                        <label class="form-label">New Password</label>
+                                        <input type="password" class="form-control" name="new_password" 
+                                               placeholder="Enter new password" minlength="8">
+                                        <div class="form-text">Minimum 8 characters</div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <label class="form-label">Confirm Password</label>
+                                        <input type="password" class="form-control" name="confirm_password" 
+                                               placeholder="Confirm new password">
+                                    </div>
+                                </div>
+                                
+                                <div class="password-strength mb-3" style="display: none;">
+                                    <div class="progress" style="height: 5px;">
+                                        <div class="progress-bar" role="progressbar" style="width: 0%"></div>
+                                    </div>
+                                    <small class="password-strength-text"></small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'user_detail' user.pk %}" class="btn btn-secondary me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary">Update User</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const newPassword = document.querySelector('input[name="new_password"]');
+    const confirmPassword = document.querySelector('input[name="confirm_password"]');
+    const strengthBar = document.querySelector('.progress-bar');
+    const strengthText = document.querySelector('.password-strength-text');
+    const strengthContainer = document.querySelector('.password-strength');
+    
+    // Password strength indicator
+    if (newPassword) {
+        newPassword.addEventListener('input', function() {
+            const password = this.value;
+            
+            if (password.length > 0) {
+                strengthContainer.style.display = 'block';
+                const strength = calculatePasswordStrength(password);
+                updateStrengthIndicator(strength);
+            } else {
+                strengthContainer.style.display = 'none';
+            }
+        });
+        
+        // Form validation
+        const form = document.querySelector('form');
+        form.addEventListener('submit', function(e) {
+            if (newPassword.value !== confirmPassword.value) {
+                e.preventDefault();
+                alert('Passwords do not match. Please confirm your new password.');
+                confirmPassword.focus();
+            }
+            
+            if (newPassword.value && newPassword.value.length < 8) {
+                e.preventDefault();
+                alert('Password must be at least 8 characters long.');
+                newPassword.focus();
+            }
+        });
+    }
+    
+    function calculatePasswordStrength(password) {
+        let strength = 0;
+        
+        // Length check
+        if (password.length >= 8) strength += 1;
+        if (password.length >= 12) strength += 1;
+        
+        // Character variety checks
+        if (/[A-Z]/.test(password)) strength += 1; // Uppercase letters
+        if (/[a-z]/.test(password)) strength += 1; // Lowercase letters
+        if (/[0-9]/.test(password)) strength += 1; // Numbers
+        if (/[^A-Za-z0-9]/.test(password)) strength += 1; // Special characters
+        
+        return Math.min(strength, 5); // Max strength of 5
+    }
+    
+    function updateStrengthIndicator(strength) {
+        const percentages = ['0%', '20%', '40%', '60%', '80%', '100%'];
+        const colors = ['danger', 'danger', 'warning', 'warning', 'success', 'success'];
+        const texts = ['Very Weak', 'Weak', 'Fair', 'Good', 'Strong', 'Very Strong'];
+        
+        strengthBar.style.width = percentages[strength];
+        strengthBar.className = `progress-bar bg-${colors[strength]}`;
+        strengthText.textContent = `Strength: ${texts[strength]}`;
+        strengthText.className = `password-strength-text text-${colors[strength]}`;
+    }
+});
+</script>
+
+<style>
+.password-strength {
+    transition: all 0.3s ease;
+}
+
+.progress {
+    border-radius: 3px;
+}
+
+.password-strength-text {
+    font-size: 0.8rem;
+    margin-top: 0.25rem;
+}
+</style>
+{% endblock %}

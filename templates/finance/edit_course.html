@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item"><a href="{% url 'finance_index' %}">Finance Hub</a></li>
+                    <li class="breadcrumb-item active">Edit Course</li>
+                </ol>
+            </nav>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-white py-3 border-bottom">
+                    <h5 class="mb-0 fw-bold text-primary">
+                        <i class="fas fa-edit me-2"></i>Edit Fee Structure: {{ course.course_name }}
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Course Name</label>
+                            {{ form.course_name }}
+                            <div class="form-text">Change this only if the course name has officially changed.</div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Total Fees (KES)</label>
+                            {{ form.total_amount }}
+                            <div class="form-text text-warning">
+                                <i class="fas fa-exclamation-triangle me-1"></i> 
+                                Changing this will only affect <strong>new</strong> admissions.
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Description</label>
+                            {{ form.description }}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Update Course Fee
+                            </button>
+                            <a href="{% url 'finance_index' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <div class="mt-4 p-3 bg-light rounded border border-danger-subtle">
+                <h6 class="text-danger fw-bold"><i class="fas fa-trash-alt me-2"></i>Danger Zone</h6>
+                <p class="small text-muted mb-2">Once deleted, you cannot assign this course to new students.</p>
+                <a href="{% url 'delete_course' course.id %}" 
+                   class="btn btn-sm btn-outline-danger" 
+                   onclick="return confirm('Are you absolutely sure? This cannot be undone.')">
+                    Delete this Course Entirely
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

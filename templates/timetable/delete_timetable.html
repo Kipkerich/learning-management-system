@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2>Delete Timetable Entry</h2>
+    <hr>
+
+    <div class="alert alert-warning">
+        <p>
+            Are you sure you want to delete this timetable entry?
+        </p>
+        <ul>
+            <li><strong>Day:</strong> {{ timetable.day|title }}</li>
+            <li><strong>Time:</strong> {{ timetable.start_time }} - {{ timetable.end_time }}</li>
+            <li><strong>Subject:</strong> {{ timetable.subject }}</li>
+            <li><strong>Trainer:</strong> {{ timetable.trainer.get_full_name|default:timetable.trainer.username }}</li>
+            <li><strong>Location:</strong> {{ timetable.location|default:"-" }}</li>
+        </ul>
+    </div>
+
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Yes, delete</button>
+        <a href="{% url 'timetable' %}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}

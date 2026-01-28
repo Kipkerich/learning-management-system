@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - LMS{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card bg-primary text-white border-0 shadow">
+                <div class="card-body p-4">
+                    <h1 class="card-title">Welcome, {{ user.first_name|default:user.username }}! 👋</h1>
+                   
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h5 class="text-muted mb-3"><i class="fas fa-th-large me-2"></i>My Learning Portal</h5>
+    <div class="row mb-5">
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm border-0 hover-zoom">
+                <div class="card-body text-center">
+                    <i class="fas fa-calendar-alt fa-3x text-primary mb-3"></i>
+                    <h5 class="card-title">Timetable</h5>
+                    <p class="card-text small text-muted">View your class schedule and events</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center pb-3">
+                    <a href="{% url 'timetable' %}" class="btn btn-outline-primary btn-sm rounded-pill px-4">View</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm border-0 hover-zoom">
+                <div class="card-body text-center">
+                    <i class="fas fa-book fa-3x text-success mb-3"></i>
+                    <h5 class="card-title">Resources</h5>
+                    <p class="card-text small text-muted">Access lecture notes </p>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center pb-3">
+                    <a href="{% url 'resources' %}" class="btn btn-outline-success btn-sm rounded-pill px-4">Access</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm border-0 hover-zoom">
+                <div class="card-body text-center">
+                    <i class="fas fa-tasks fa-3x text-warning mb-3"></i>
+                    <h5 class="card-title">Assignments</h5>
+                    <p class="card-text small text-muted">Check and submit coursework</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center pb-3">
+                    <a href="{% url 'assignments' %}" class="btn btn-outline-warning btn-sm rounded-pill px-4">Check</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm border-0 hover-zoom">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-alt fa-3x text-danger mb-3"></i>
+                    <h5 class="card-title">CATS</h5>
+                    <p class="card-text small text-muted">Exams and continuous assessments</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center pb-3">
+                    <a href="{% url 'cats' %}" class="btn btn-outline-danger btn-sm rounded-pill px-4">Results</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% if request.user.is_staff %}
+    <hr class="mb-5">
+    <h5 class="text-danger mb-3"><i class="fas fa-user-shield me-2"></i>Administration & Finance</h5>
+    <div class="row">
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm border-0 bg-primary text-white hover-zoom">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center py-4">
+                    <i class="fas fa-user-plus fa-3x mb-3"></i>
+                    <h5 class="card-title">Student Admissions</h5>
+                    <p class="card-text text-center small opacity-75">Register new students & set profiles</p>
+                    <a href="{% url 'register_student' %}" class="btn btn-light btn-sm mt-auto px-4 fw-bold">Open Registration</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm border-0 hover-zoom">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center py-4 text-center">
+                    <i class="fas fa-address-book fa-3x mb-3 text-primary"></i>
+                    <h5 class="card-title">Student Directory</h5>
+                    <p class="card-text text-muted small">Manage all enrolled student data</p>
+                    <a href="{% url 'student_list' %}" class="btn btn-outline-primary btn-sm mt-auto px-4">Manage Directory</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-4 mb-4">
+            <div class="card h-100 shadow-sm border-0 bg-success text-white hover-zoom">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center py-4 text-center">
+                    <i class="fas fa-file-invoice-dollar fa-3x mb-3"></i>
+                    <h5 class="card-title">Finance Hub</h5>
+                    <p class="card-text small opacity-75">Course fees, payments, and billing</p>
+                    <a href="{% url 'finance_index' %}" class="btn btn-light btn-sm mt-auto px-4 fw-bold text-success">Open Finance</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+</div>
+
+<style>
+    .hover-zoom { transition: transform 0.2s, box-shadow 0.2s; border-radius: 15px; }
+    .hover-zoom:hover { transform: translateY(-5px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; cursor: pointer; }
+    .card-footer { background: transparent; }
+</style>
+{% endblock %}
