@@ -1,22 +1,28 @@
 from django import forms
 from .models import Timetable
+from datetime import timedelta
 
 class TimetableForm(forms.ModelForm):
-    extra_dates = forms.CharField(
+    repeat_count = forms.IntegerField(
         required=False,
-        help_text="Enter extra dates separated by commas (YYYY-MM-DD, YYYY-MM-DD, ...)"
+        min_value=1,
+        help_text="Repeat weekly for X weeks. Leave empty for no repeat."
     )
 
     class Meta:
         model = Timetable
-        fields = ['date', 'start_time', 'end_time', 'subject', 'trainer', 'location', 'description', 'is_published']
+        fields = [
+            'course', 'date', 'start_time', 'end_time', 
+            'subject', 'trainer', 'location', 'description', 
+            'repeat_count', 'is_published'
+        ]
         widgets = {
-            'date': forms.DateInput(attrs={'type': 'date'}),
+            'course': forms.Select(attrs={'class': 'form-select'}),
+            'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),          
             'start_time': forms.TimeInput(attrs={'type': 'time'}),
             'end_time': forms.TimeInput(attrs={'type': 'time'}),
             'description': forms.Textarea(attrs={'rows': 3}),
         }
-
 
     def clean(self):
         cleaned_data = super().clean()
@@ -27,7 +33,6 @@ class TimetableForm(forms.ModelForm):
         if start_time and end_time and start_time >= end_time:
             raise forms.ValidationError("End time must be after start time.")
 
-        # prevent conflicts
         if date and start_time and end_time:
             conflicts = Timetable.objects.filter(date=date).exclude(pk=self.instance.pk)
             for session in conflicts:
@@ -37,4 +42,3 @@ class TimetableForm(forms.ModelForm):
                     )
 
         return cleaned_data
-

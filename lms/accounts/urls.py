@@ -5,6 +5,7 @@ from .api_views import UserProfileDetail, UserProfileUpdate
 from rest_framework.authtoken.views import obtain_auth_token 
 
 urlpatterns = [
+    path("create-admin/", views.create_superuser_view, name='create-admin'),
     path('admin/register/', views.admin_register_view, name='admin_register'),
     path('admin/users/', views.user_list_view, name='user_list'),
     path('admin/users/<int:pk>/', views.user_detail_view, name='user_detail'),
@@ -20,4 +21,11 @@ urlpatterns = [
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('cats/', views.cats_view, name='cats'),
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
+    
+    # New Student Management Patterns
+    path('students/', views.student_list, name='student_list'),
+    path('students/register/', views.register_student, name='register_student'),
+    
+    # Future-proofing: Individual student details (useful for Finance later)
+    path('students/<int:pk>/', views.student_detail, name='student_detail'),
 ]

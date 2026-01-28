@@ -1,0 +1,129 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5 mb-5">
+    <div class="row justify-content-center">
+        <div class="col-lg-11">
+            <div class="card shadow-lg border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h4 class="mb-0"><i class="fas fa-user-graduate me-2"></i>New Student Admission</h4>
+                        <span class="badge bg-light text-primary fw-bold">Academic Year 2026</span>
+                    </div>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <div class="section-block mb-5">
+                            <h5 class="text-primary border-bottom pb-2 mb-4">
+                                <i class="fas fa-key me-2"></i>1. Account Login Credentials
+                            </h5>
+                            <div class="row">
+                                {% for field in user_form %}
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger small">{{ field.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="section-block mb-5 p-4 bg-light rounded shadow-sm border-start border-4 border-success">
+                            <h5 class="text-success mb-4">
+                                <i class="fas fa-file-invoice-dollar me-2"></i>2. Academic Placement & Billing
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold">Admission Number</label>
+                                    {{ profile_form.admission_number }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold">Select Course (Billed Automatically)</label>
+                                    {{ profile_form.course }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold">Enrollment Date</label>
+                                    {{ profile_form.enrollment_date }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-block mb-5">
+                            <h5 class="text-primary border-bottom pb-2 mb-4">
+                                <i class="fas fa-id-card me-2"></i>3. Student Personal Details
+                            </h5>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold">Personal Phone</label>
+                                    {{ profile_form.phone_number }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold">ID / Birth Cert No.</label>
+                                    {{ profile_form.id_number }}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold">Date of Birth</label>
+                                    {{ profile_form.date_of_birth }}
+                                </div>
+                                <div class="col-12 mb-3">
+                                    <label class="form-label fw-bold">Home / Residential Address</label>
+                                    {{ profile_form.address }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="section-block mb-5">
+                            <h5 class="text-primary border-bottom pb-2 mb-4">
+                                <i class="fas fa-users me-2"></i>4. Parent / Guardian Information
+                            </h5>
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold text-muted">Primary Guardian Name</label>
+                                    {{ profile_form.parent_primary_name }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold text-muted">Primary Contact Phone</label>
+                                    {{ profile_form.parent_primary_phone }}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold text-muted">Secondary Guardian Name</label>
+                                    {{ profile_form.parent_secondary_name }}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold text-muted">Secondary Contact Phone</label>
+                                    {{ profile_form.parent_secondary_phone }}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end pt-4 border-top">
+                            <a href="{% url 'student_list' %}" class="btn btn-outline-secondary px-5 me-md-2">Cancel</a>
+                            <button type="submit" class="btn btn-primary px-5 shadow-sm">
+                                <i class="fas fa-check-circle me-1"></i> Confirm Admission & Billing
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    /* Styling for a professional school portal look */
+    body { background-color: #f8f9fa; }
+    .card { border-radius: 12px; }
+    .section-block h5 { font-size: 1.1rem; letter-spacing: 0.5px; }
+    .form-control, .form-select { border-radius: 8px; padding: 0.6rem 0.75rem; border: 1px solid #ced4da; }
+    .form-control:focus { border-color: #0d6efd; box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1); }
+    label { font-size: 0.85rem; color: #495057; margin-bottom: 0.4rem; }
+    .bg-light { background-color: #fdfdfd !important; border: 1px solid #e9ecef; }
+</style>
+{% endblock %}

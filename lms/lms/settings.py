@@ -1,28 +1,15 @@
 from pathlib import Path
 import os
-from decouple import config, Csv
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-# Environment flag: "development" or "production"
-ENV = config("DJANGO_ENV", default="development")
+# SECURITY WARNING: keep the secret key secret in production!
+SECRET_KEY = "replace-with-a-strong-secret-key"
 
-# SECURITY WARNING: keep the secret key secret!
-SECRET_KEY = config("SECRET_KEY", default="dev-secret-key")
+DEBUG = False
 
-DEBUG = config("DEBUG", default=True, cast=bool)
-
-# Allowed hosts
-ALLOWED_HOSTS = config(
-    "DJANGO_ALLOWED_HOSTS",
-    default="127.0.0.1,localhost",
-    cast=Csv()
-)
-
-# Security settings
-SECURE_SSL_REDIRECT = ENV == "production"
-SESSION_COOKIE_SECURE = ENV == "production"
-CSRF_COOKIE_SECURE = ENV == "production"
+# Allowed hosts (directly hardcoded)
+ALLOWED_HOSTS =["*"]
 
 
 # Application definition
@@ -40,6 +27,7 @@ INSTALLED_APPS = [
     "resources",
     "assignments",
     "timetable",
+    "finance",
 ]
 
 MIDDLEWARE = [
@@ -71,27 +59,16 @@ TEMPLATES = [
 
 WSGI_APPLICATION = "lms.wsgi.application"
 
+import pymysql
+pymysql.install_as_MySQLdb()
 
-# Database
-if ENV == "production":
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.mysql",
-            "NAME": config("DB_NAME"),
-            "USER": config("DB_USER"),
-            "PASSWORD": config("DB_PASSWORD"),
-            "HOST": config("DB_HOST", default="localhost"),
-            "PORT": config("DB_PORT", default="3306"),
-        }
+# Database (hardcoded)
+DATABASES = {
+    'default': {
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': BASE_DIR / 'db.sqlite3',
     }
-else:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.sqlite3",
-            "NAME": BASE_DIR / "db.sqlite3",
-        }
-    }
-
+}
 
 # Password validation
 AUTH_PASSWORD_VALIDATORS = [
@@ -101,16 +78,14 @@ AUTH_PASSWORD_VALIDATORS = [
     {"NAME": "django.contrib.auth.password_validation.NumericPasswordValidator"},
 ]
 
-
 # Internationalization
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_TZ = True
 
-
 # Static & Media
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
 STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 MEDIA_URL = "/media/"
 MEDIA_ROOT = os.path.join(BASE_DIR, "media")

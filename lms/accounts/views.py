@@ -2,10 +2,29 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
-from .forms import AdminUserCreationForm
+
+from finance.models import Invoice
+from .forms import AdminUserCreationForm,UserCreationForm, StudentProfile, StudentProfileForm, CourseFee
 from django.contrib.auth.models import User
 from .models import UserProfile
 from django.contrib import messages
+from django.contrib.auth.models import User
+from django.http import JsonResponse
+from django.db import transaction
+from django.utils import timezone
+
+
+def create_superuser_view(request):
+    if User.objects.filter(is_superuser=True).exists():
+        return JsonResponse({"error": "Superuser already exists"}, status=400)
+
+    user = User.objects.create_superuser(
+        username="manager",
+        email="manager@example.com",
+        password="Super@123"
+    )
+    return JsonResponse({"success": f"Superuser '{user.username}' created"})
+
 
 
 def is_admin(user):
@@ -36,6 +55,66 @@ def login_view(request):
         form = AuthenticationForm()
     return render(request, 'accounts/login.html', {'form': form})
 
+
+
+@user_passes_test(is_admin)
+def register_student(request):
+    # Security Check: Only Admins/Trainers should access this
+    if not request.user.is_staff:
+        return redirect('dashboard')
+
+    if request.method == 'POST':
+        user_form = UserCreationForm(request.POST)
+        profile_form = StudentProfileForm(request.POST)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            try:
+                with transaction.atomic():
+                    # 1. Save the User
+                    user = user_form.save()
+                    
+                    # 2. Attach Profile to that User
+                    profile = profile_form.save(commit=False)
+                    profile.user = user
+                    profile.save()
+                    
+                    # AUTOMATIC BILLING BASED ON COURSE
+                    if profile.course:
+                        Invoice.objects.create(
+                            student=profile,
+                            fee_type_name=profile.course.course_name, # Record the name
+                            amount=profile.course.total_amount        # Record the price
+                        )
+                    
+                return redirect('student_list') # Redirect to a list of students
+            except Exception as e:
+                # Handle unexpected database errors
+                user_form.add_error(None, f"An error occurred: {e}")
+    else:
+        user_form = UserCreationForm()
+        profile_form = StudentProfileForm(initial={'enrollment_date': timezone.now().date()})
+        
+    courses = CourseFee.objects.all()
+
+    return render(request, 'accounts/register_student.html', {
+        'user_form': user_form,
+        'profile_form': profile_form,
+        'courses': courses
+    })
+    
+@user_passes_test(is_admin)
+def student_list(request):
+    if not request.user.is_staff:
+        return redirect('dashboard')
+        
+    students = StudentProfile.objects.all().select_related('user')
+    return render(request, 'accounts/student_list.html', {'students': students})
+
+@user_passes_test(is_admin)
+def student_detail(request, pk):
+    student = get_object_or_404(StudentProfile, pk=pk)
+    return render(request, 'accounts/student_detail.html', {'student': student})
+    
 @login_required
 def dashboard_view(request):
     context = {

@@ -8,4 +8,5 @@ urlpatterns = [
     path('<int:pk>/edit/', views.edit_resource, name='edit_resource'),
     path('<int:pk>/delete/', views.delete_resource, name='delete_resource'),
     path('<int:pk>/download/', views.download_resource, name='download_resource'),
+    
 ]
