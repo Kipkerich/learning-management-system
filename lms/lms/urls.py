@@ -28,6 +28,7 @@ urlpatterns = [
     path('assignments/', include('assignments.urls')),
     path('timetable/', include('timetable.urls')),
     path('finance/', include('finance.urls')),
+    path('courses/', include('courses.urls')),
     # Redirect root URL to login page
     path('', RedirectView.as_view(url='/accounts/login/', permanent=False)),
 ]
