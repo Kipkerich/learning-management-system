@@ -16,16 +16,20 @@ urlpatterns = [
     path('', views.dashboard_view, name='dashboard'),
     path('dashboard/', views.dashboard_view, name='dashboard'),
     path('profile/', views.profile_view, name='profile'),
-     path('api/profile/', UserProfileDetail.as_view(), name='api_profile'),
+    path('api/profile/', UserProfileDetail.as_view(), name='api_profile'),
     path('api/profile/update/', UserProfileUpdate.as_view(), name='api_profile_update'),
     path('logout/', auth_views.LogoutView.as_view(), name='logout'),
     path('cats/', views.cats_view, name='cats'),
     path('api-token-auth/', obtain_auth_token, name='api_token_auth'),
     
-    # New Student Management Patterns
+    # Student Management Patterns
     path('students/', views.student_list, name='student_list'),
     path('students/register/', views.register_student, name='register_student'),
-    
-    # Future-proofing: Individual student details (useful for Finance later)
     path('students/<int:pk>/', views.student_detail, name='student_detail'),
+
+    # Cohort Management Patterns
+    path('cohorts/', views.cohort_list, name='cohort_list'),
+    path('cohorts/create/', views.create_cohort, name='create_cohort'),
+    path('cohorts/<int:pk>/edit/', views.edit_cohort, name='edit_cohort'),
+    path('cohorts/<int:pk>/delete/', views.delete_cohort, name='delete_cohort'),
 ]
