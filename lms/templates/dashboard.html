@@ -9,7 +9,6 @@
             <div class="card bg-primary text-white border-0 shadow">
                 <div class="card-body p-4">
                     <h1 class="card-title">Welcome, {{ user.first_name|default:user.username }}! 👋</h1>
-                   
                 </div>
             </div>
         </div>
@@ -56,25 +55,40 @@
             </div>
         </div>
 
+        {% if request.user.student_profile %}
         <div class="col-md-3 mb-4">
             <div class="card h-100 shadow-sm border-0 hover-zoom">
                 <div class="card-body text-center">
-                    <i class="fas fa-file-alt fa-3x text-danger mb-3"></i>
-                    <h5 class="card-title">CATS</h5>
-                    <p class="card-text small text-muted">Exams and continuous assessments</p>
+                    <i class="fas fa-file-invoice fa-3x text-danger mb-3"></i>
+                    <h5 class="card-title">My Results</h5>
+                    <p class="card-text small text-muted">View published CAT & Exam scores</p>
                 </div>
                 <div class="card-footer bg-transparent border-0 text-center pb-3">
-                    <a href="{% url 'cats' %}" class="btn btn-outline-danger btn-sm rounded-pill px-4">Results</a>
+                    <a href="{% url 'student_my_results' %}" class="btn btn-outline-danger btn-sm rounded-pill px-4">View Results</a>
                 </div>
             </div>
         </div>
+        {% else %}
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm border-0 hover-zoom">
+                <div class="card-body text-center">
+                    <i class="fas fa-file-signature fa-3x text-danger mb-3"></i>
+                    <h5 class="card-title">Trainer Results</h5>
+                    <p class="card-text small text-muted">Enter CAT & Exam scores for assigned units</p>
+                </div>
+                <div class="card-footer bg-transparent border-0 text-center pb-3">
+                    <a href="{% url 'trainer_portal' %}" class="btn btn-outline-danger btn-sm rounded-pill px-4">Enter Results</a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
     </div>
 
-    {% if request.user.is_staff %}
+    {% if request.user.is_staff or request.user.is_superuser %}
     <hr class="mb-5">
-    <h5 class="text-danger mb-3"><i class="fas fa-user-shield me-2"></i>Administration & Finance</h5>
+    <h5 class="text-danger mb-3"><i class="fas fa-user-shield me-2"></i>Administration, Results & Transcripts</h5>
     <div class="row">
-        <div class="col-md-4 mb-4">
+        <div class="col-md-3 mb-4">
             <div class="card h-100 shadow-sm border-0 bg-primary text-white hover-zoom">
                 <div class="card-body d-flex flex-column align-items-center justify-content-center py-4">
                     <i class="fas fa-user-plus fa-3x mb-3"></i>
@@ -85,7 +99,7 @@
             </div>
         </div>
 
-        <div class="col-md-4 mb-4">
+        <div class="col-md-3 mb-4">
             <div class="card h-100 shadow-sm border-0 hover-zoom">
                 <div class="card-body d-flex flex-column align-items-center justify-content-center py-4 text-center">
                     <i class="fas fa-address-book fa-3x mb-3 text-primary"></i>
@@ -96,13 +110,24 @@
             </div>
         </div>
 
-        <div class="col-md-4 mb-4">
+        <div class="col-md-3 mb-4">
+            <div class="card h-100 shadow-sm border-0 bg-info text-white hover-zoom">
+                <div class="card-body d-flex flex-column align-items-center justify-content-center py-4 text-center">
+                    <i class="fas fa-chalkboard-teacher fa-3x mb-3"></i>
+                    <h5 class="card-title">Trainer Assignments</h5>
+                    <p class="card-text small opacity-75">Assign units to trainers per cohort</p>
+                    <a href="{% url 'assignment_list' %}" class="btn btn-light btn-sm mt-auto px-4 fw-bold text-info">Manage Assignments</a>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-3 mb-4">
             <div class="card h-100 shadow-sm border-0 bg-success text-white hover-zoom">
                 <div class="card-body d-flex flex-column align-items-center justify-content-center py-4 text-center">
-                    <i class="fas fa-file-invoice-dollar fa-3x mb-3"></i>
-                    <h5 class="card-title">Finance Hub</h5>
-                    <p class="card-text small opacity-75">Course fees, payments, and billing</p>
-                    <a href="{% url 'finance_index' %}" class="btn btn-light btn-sm mt-auto px-4 fw-bold text-success">Open Finance</a>
+                    <i class="fas fa-file-invoice fa-3x mb-3"></i>
+                    <h5 class="card-title">Results & Transcripts</h5>
+                    <p class="card-text small opacity-75">Verify results & manage graduation</p>
+                    <a href="{% url 'admin_results_list' %}" class="btn btn-light btn-sm mt-auto px-4 fw-bold text-success">Verify Results</a>
                 </div>
             </div>
         </div>
