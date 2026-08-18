@@ -1,0 +1,79 @@
+{% extends 'base.html' %}
+
+{% block title %}Trainer Unit Assignments - LMS{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2><i class="fas fa-chalkboard-teacher text-primary me-2"></i>Trainer Unit Assignments</h2>
+            <p class="text-muted small mb-0">Assign course units to trainers per cohort and manage workloads.</p>
+        </div>
+        <a href="{% url 'create_assignment' %}" class="btn btn-primary shadow-sm">
+            <i class="fas fa-plus-circle me-1"></i> Assign Unit to Trainer
+        </a>
+    </div>
+
+    {% if assignments %}
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr class="text-secondary small text-uppercase">
+                        <th class="ps-4">Trainer Name</th>
+                        <th>Course & Unit</th>
+                        <th>Assigned Cohort</th>
+                        <th>Assigned Date</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in assignments %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold text-dark">{{ item.trainer.get_full_name|default:item.trainer.username }}</div>
+                            <div class="text-muted small">{{ item.trainer.email }}</div>
+                        </td>
+                        <td>
+                            <div class="fw-bold"><span class="badge bg-primary me-1">{{ item.unit.code }}</span> {{ item.unit.name }}</div>
+                            <div class="small text-muted">{{ item.unit.course.name }}</div>
+                        </td>
+                        <td>
+                            <span class="badge bg-info-subtle text-info border border-info px-3 fs-6">
+                                <i class="fas fa-users me-1"></i>{{ item.cohort.name }}
+                            </span>
+                        </td>
+                        <td class="text-muted small">{{ item.assigned_at|date:"M d, Y" }}</td>
+                        <td class="text-end pe-4">
+                            <a href="{% url 'enter_results' item.pk %}" class="btn btn-sm btn-outline-success me-1" title="Enter Results">
+                                <i class="fas fa-file-signature me-1"></i> Enter Results
+                            </a>
+                            <a href="{% url 'edit_assignment' item.pk %}" class="btn btn-sm btn-outline-secondary me-1" title="Edit">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'delete_assignment' item.pk %}" class="btn btn-sm btn-outline-danger" title="Delete">
+                                <i class="fas fa-trash-alt"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center py-4 shadow-sm">
+        <i class="fas fa-info-circle fa-2x mb-3 text-info"></i>
+        <h5>No Unit Assignments Found</h5>
+        <p class="text-muted mb-3">Assign units to trainers per cohort to allow trainers to enter CAT and Exam scores.</p>
+        <a href="{% url 'create_assignment' %}" class="btn btn-primary">
+            <i class="fas fa-plus-circle me-1"></i> Assign Unit Now
+        </a>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .bg-info-subtle { background-color: #cff4fc; }
+</style>
+{% endblock %}

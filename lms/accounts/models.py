@@ -68,6 +68,16 @@ class StudentProfile(models.Model):
     # Financial Link
     is_fully_paid = models.BooleanField(default=False)
 
+    # Graduation Eligibility Fields
+    is_eligible_for_graduation = models.BooleanField(default=False)
+    graduation_status = models.CharField(max_length=20, choices=[
+        ('Pending', 'Pending Review'),
+        ('Eligible', 'Eligible for Graduation'),
+        ('Not Eligible', 'Not Eligible'),
+        ('Graduated', 'Graduated')
+    ], default='Pending')
+    graduation_notes = models.TextField(blank=True, null=True)
+
     def __str__(self):
         return f"{self.user.get_full_name()} ({self.admission_number})"
 
