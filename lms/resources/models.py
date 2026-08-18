@@ -5,9 +5,9 @@ from django.utils.text import slugify
 import os
 
 def validate_file_size(value):
-    max_size = 5 * 1024 * 1024  # 5 MB
+    max_size = 300 * 1024 * 1024  # 300 MB
     if value.size > max_size:
-        raise ValidationError("File size must be under 5MB")
+        raise ValidationError("File size must be under 300MB")
 
 class Resource(models.Model):
     RESOURCE_TYPES = (

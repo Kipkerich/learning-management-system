@@ -5,8 +5,13 @@ from django.contrib import messages
 from django.http import JsonResponse
 from .models import Timetable
 from .forms import TimetableForm
-from datetime import timedelta
-from django.utils import timezone
+from datetime import datetime, timedelta
+from django.db.models import DateField
+from django.db.models.functions import TruncDate
+from django.db import transaction
+from collections import defaultdict
+from finance.models import CourseFee
+
 
 def is_admin(user):
     return user.is_superuser
@@ -19,30 +24,31 @@ def is_student(user):
 
 @login_required
 def timetable_view(request):
-    # Only show published timetables to non-admins
+    selected_course = request.GET.get('course')
+    
+    # Base Queryset
     if is_admin(request.user):
         timetables = Timetable.objects.all()
     else:
         timetables = Timetable.objects.filter(is_published=True)
-    
-    # Group by day for easier display
-    days = {
-        'monday': [],
-        'tuesday': [],
-        'wednesday': [],
-        'thursday': [],
-        'friday': [],
- 
-    }
-    
-    for timetable in timetables:
-        days[timetable.day].append(timetable)
-    
+
+    # Apply Filter if a course is selected
+    if selected_course:
+        timetables = timetables.filter(course_id=selected_course)
+
+    # Order and Group as before
+    timetables = timetables.order_by('date', 'start_time')
+    dates_dict = defaultdict(list)
+    for session in timetables:
+        dates_dict[session.date].append(session)
+
+    sorted_dates = sorted(dates_dict.items())
+
     context = {
-        'days': days,
+        'dates': sorted_dates,
         'is_admin': is_admin(request.user),
-        'is_trainer': is_trainer(request.user),
-        'is_student': is_student(request.user),
+        'courses': CourseFee.objects.all(), # Pass all courses for the dropdown
+        'selected_course': selected_course,
     }
     return render(request, 'timetable/timetable.html', context)
 
@@ -52,36 +58,51 @@ def create_timetable(request):
     if request.method == 'POST':
         form = TimetableForm(request.POST)
         if form.is_valid():
-            timetable = form.save()
+            try:
+                with transaction.atomic():
+                    # 1. EXTRACT DATA FIRST
+                    repeat_count = form.cleaned_data.get('repeat_count') or 1
+                    base_date = form.cleaned_data['date']
+                    start_time = form.cleaned_data['start_time']  # <--- Added this
+                    end_time = form.cleaned_data['end_time']      # <--- Added this
+                    subject = form.cleaned_data['subject']
+                    trainer = form.cleaned_data['trainer']
+                    location = form.cleaned_data['location']
+                    description = form.cleaned_data['description']
+                    is_published = form.cleaned_data['is_published']
 
-            # Handle multiple extra dates
-            extra_dates_str = form.cleaned_data.get('extra_dates', '')
-            if extra_dates_str:
-                extra_dates = [d.strip() for d in extra_dates_str.split(',')]
-                for d in extra_dates:
-                    try:
-                        parsed_date = datetime.strptime(d, "%Y-%m-%d").date()
+                    # 2. NOW START THE LOOP
+                    for i in range(repeat_count):
+                        schedule_date = base_date + timedelta(days=7 * i)
+
+                        # Conflict check
+                        conflicts = Timetable.objects.filter(date=schedule_date)
+                        for session in conflicts:
+                            if (start_time < session.end_time and end_time > session.start_time):
+                                messages.error(request, f"Conflict on {schedule_date} with {session.subject}. No entries saved.")
+                                return render(request, 'timetable/create_timetable.html', {'form': form})
+
+                        # Save the entry
                         Timetable.objects.create(
-                            date=parsed_date,
-                            start_time=timetable.start_time,
-                            end_time=timetable.end_time,
-                            subject=timetable.subject,
-                            trainer=timetable.trainer,
-                            location=timetable.location,
-                            description=timetable.description,
-                            is_published=timetable.is_published,
+                            date=schedule_date,
+                            start_time=start_time,
+                            end_time=end_time,
+                            subject=subject,
+                            trainer=trainer,
+                            location=location,
+                            description=description,
+                            is_published=is_published,
                         )
-                    except ValueError:
-                        continue  # skip invalid dates
 
-            messages.success(request, 'Timetable entry (and extra dates) created successfully!')
-            return redirect('timetable')
+                messages.success(request, f'Successfully created {repeat_count} weekly entries!')
+                return redirect('timetable')
+
+            except Exception as e:
+                messages.error(request, f"An unexpected error occurred: {e}")
     else:
         form = TimetableForm()
 
     return render(request, 'timetable/create_timetable.html', {'form': form})
-
-
 @login_required
 @user_passes_test(is_admin)
 def edit_timetable(request, pk):

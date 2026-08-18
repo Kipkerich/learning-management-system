@@ -3,6 +3,28 @@
 {% block content %}
 <div class="container mt-4">
     <h2 class="mb-4">Weekly Timetable</h2>
+    <div class="card mb-4 border-0 shadow-sm bg-light">
+    <div class="card-body">
+        <form method="GET" class="row g-3 align-items-end">
+            <div class="col-md-8">
+                <label class="form-label fw-bold small text-uppercase">Filter by Course</label>
+                <select name="course" class="form-select">
+                    <option value="">-- All Courses --</option>
+                    {% for course in courses %}
+                        <option value="{{ course.id }}" {% if selected_course == course.id|stringformat:"s" %}selected{% endif %}>
+                            {{ course.course_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-4 d-grid">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-filter me-2"></i>Apply Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
 
     {% if is_admin %}
         <a href="{% url 'create_timetable' %}" class="btn btn-primary mb-3">+ Add Timetable Entry</a>
@@ -19,53 +41,59 @@
     </ul>
 
     <div class="tab-content" id="timetableTabsContent">
-        <!-- Table View -->
-        <div class="tab-pane fade show active" id="tableView" role="tabpanel">
-            {% for day, sessions in days.items %}
-                <div class="card mb-4 shadow-sm">
-                    <div class="card-header bg-light">
-                        <h5 class="mb-0 text-capitalize">{{ day }}</h5>
-                    </div>
-                    <div class="card-body p-0">
-                        {% if sessions %}
-                            <table class="table table-striped table-hover mb-0">
-                                <thead class="table-secondary">
-                                    <tr>
-                                        <th>Time</th>
-                                        <th>Subject</th>
-                                        <th>Trainer</th>
-                                        <th>Location</th>
-                                        <th>Description</th>
-                                        {% if is_admin %}
-                                            <th>Actions</th>
-                                        {% endif %}
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {% for session in sessions %}
-                                        <tr>
-                                            <td>{{ session.start_time }} - {{ session.end_time }}</td>
-                                            <td>{{ session.subject }}</td>
-                                            <td>{{ session.trainer.get_full_name|default:session.trainer.username }}</td>
-                                            <td>{{ session.location }}</td>
-                                            <td>{{ session.description|default:"-" }}</td>
-                                            {% if is_admin %}
-                                                <td>
-                                                    <a href="{% url 'edit_timetable' session.pk %}" class="btn btn-sm btn-warning">Edit</a>
-                                                    <a href="{% url 'delete_timetable' session.pk %}" class="btn btn-sm btn-danger">Delete</a>
-                                                </td>
-                                            {% endif %}
-                                        </tr>
-                                    {% endfor %}
-                                </tbody>
-                            </table>
-                        {% else %}
-                            <p class="p-3 text-muted">No sessions scheduled for this day.</p>
-                        {% endif %}
-                    </div>
+       <!-- Table View -->
+<div class="tab-pane fade show active" id="tableView" role="tabpanel">
+    {% for date, sessions in dates %}
+        <div class="card mb-4 shadow-sm border-0">
+            <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar-alt text-info me-2"></i>
+                    {{ date|date:"l" }}, {{ date|date:"d F Y" }}
+                </h5>
+                {% if date == today %}
+                    <span class="badge bg-success">Today</span>
+                {% endif %}
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Time</th>
+                                <th>Subject</th>
+                                <th>Trainer</th>
+                                <th>Location</th>
+                                {% if is_admin %}
+                                    <th class="text-center">Actions</th>
+                                {% endif %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for session in sessions %}
+                                <tr>
+                                    <td class="fw-bold text-primary">
+                                        {{ session.start_time|time:"H:i" }} - {{ session.end_time|time:"H:i" }}
+                                    </td>
+                                    <td>{{ session.subject }}</td>
+                                    <td>{{ session.trainer.get_full_name|default:session.trainer.username }}</td>
+                                    <td><span class="badge bg-light text-dark border">{{ session.location }}</span></td>
+                                    {% if is_admin %}
+                                        <td class="text-center">
+                                            <a href="{% url 'edit_timetable' session.pk %}" class="btn btn-sm btn-outline-warning py-0">Edit</a>
+                                            <a href="{% url 'delete_timetable' session.pk %}" class="btn btn-sm btn-outline-danger py-0">Delete</a>
+                                        </td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
                 </div>
-            {% endfor %}
+            </div>
         </div>
+    {% empty %}
+        <div class="alert alert-info">No classes scheduled yet.</div>
+    {% endfor %}
+</div>
 
         <!-- Calendar View -->
         <div class="tab-pane fade" id="calendarView" role="tabpanel">

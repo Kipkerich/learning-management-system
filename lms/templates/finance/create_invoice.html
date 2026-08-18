@@ -1,0 +1,36 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-primary text-white py-3">
+                    <h5 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Generate New Invoice</h5>
+                </div>
+                <div class="card-body p-4">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Select Student</label>
+                            {{ form.student }}
+                            <div class="form-text">Search by Admission Number or Name.</div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label fw-bold">Fee Category</label>
+                            {{ form.fee_type }}
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary">Create Invoice</button>
+                            <a href="{% url 'student_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

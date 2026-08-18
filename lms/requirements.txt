@@ -2,9 +2,10 @@ asgiref==3.9.1
 Django==5.2.5
 djangorestframework==3.16.1
 iniconfig==2.1.0
-mysqlclient==2.2.7
+PyMySQL
 packaging==25.0
 pluggy==1.6.0
+python-decouple==3.8
 Pygments==2.19.2
 pytest==8.4.1
 pytest-django==4.11.1
