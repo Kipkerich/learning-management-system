@@ -9,14 +9,18 @@ from accounts.models import Cohort, StudentProfile, UserProfile
 from django.contrib.auth.models import User
 
 def is_admin(user):
-    return user.is_authenticated and (user.is_superuser or user.is_staff)
-
-def is_trainer_or_admin(user):
     if not user.is_authenticated:
         return False
     if user.is_superuser or user.is_staff:
         return True
-    return hasattr(user, 'userprofile') and user.userprofile.user_type == 'trainer'
+    return hasattr(user, 'userprofile') and user.userprofile.user_type == 'admin'
+
+def is_trainer_or_admin(user):
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser or user.is_staff or (hasattr(user, 'userprofile') and user.userprofile.user_type in ['admin', 'trainer']):
+        return True
+    return False
 
 
 # ==========================================
@@ -81,7 +85,7 @@ def delete_assignment(request, pk):
 @user_passes_test(is_trainer_or_admin)
 def trainer_portal(request):
     """Lists unit assignments for the logged-in trainer."""
-    if request.user.is_superuser or request.user.is_staff:
+    if is_admin(request.user):
         assignments = TrainerUnitAssignment.objects.all().select_related('trainer', 'unit', 'unit__course', 'cohort')
     else:
         assignments = TrainerUnitAssignment.objects.filter(trainer=request.user).select_related('unit', 'unit__course', 'cohort')
@@ -95,7 +99,7 @@ def enter_results(request, assignment_id):
     assignment = get_object_or_404(TrainerUnitAssignment, pk=assignment_id)
 
     # Restrict non-admin trainers to their own assignments
-    if not (request.user.is_superuser or request.user.is_staff) and assignment.trainer != request.user:
+    if not is_admin(request.user) and assignment.trainer != request.user:
         messages.error(request, "You are not authorized to enter results for this unit assignment.")
         return redirect('trainer_portal')
 
@@ -222,13 +226,13 @@ def transcript_detail(request, student_id):
     student = get_object_or_404(StudentProfile.objects.select_related('user', 'course', 'cohort'), pk=student_id)
 
     # Permission check: Student can only view their own transcript, Admin can view any
-    if not (request.user.is_superuser or request.user.is_staff) and student.user != request.user:
+    if not is_admin(request.user) and student.user != request.user:
         messages.error(request, "Access denied. You can only view your own transcript.")
         return redirect('dashboard')
 
     # Query results: Students only see published results unless admin
     results = student.results.select_related('unit', 'cohort', 'unit__course').all()
-    if not (request.user.is_superuser or request.user.is_staff):
+    if not is_admin(request.user):
         results = results.filter(is_published=True)
 
     total_units = results.count()
@@ -241,7 +245,7 @@ def transcript_detail(request, student_id):
         'total_units': total_units,
         'passed_units': passed_units,
         'avg_score': avg_score,
-        'is_admin_view': request.user.is_superuser or request.user.is_staff
+        'is_admin_view': is_admin(request.user)
     })
 
 

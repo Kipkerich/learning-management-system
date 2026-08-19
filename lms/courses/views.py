@@ -5,7 +5,11 @@ from .models import Course, Unit
 from .forms import CourseForm, UnitForm, CourseFeeUpdateForm
 
 def is_staff_user(user):
-    return user.is_active and user.is_staff
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser or user.is_staff:
+        return True
+    return hasattr(user, 'userprofile') and user.userprofile.user_type == 'admin'
 
 @login_required
 @user_passes_test(is_staff_user)

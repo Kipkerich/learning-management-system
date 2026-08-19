@@ -4,7 +4,7 @@ from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
 
 from finance.models import Invoice, CourseFee, FeeStructure
-from .forms import AdminUserCreationForm, UserCreationForm, StudentProfileForm, CohortForm
+from .forms import AdminUserCreationForm, UserCreationForm, StudentProfileForm, StudentUserEditForm, CohortForm
 from django.contrib.auth.models import User
 from .models import UserProfile, StudentProfile, Cohort
 from django.contrib import messages
@@ -26,7 +26,11 @@ def create_superuser_view(request):
 
 
 def is_admin(user):
-    return user.is_superuser or user.is_staff
+    if not user.is_authenticated:
+        return False
+    if user.is_superuser or user.is_staff:
+        return True
+    return hasattr(user, 'userprofile') and user.userprofile.user_type == 'admin'
 
 
 @user_passes_test(is_admin)
@@ -58,7 +62,7 @@ def login_view(request):
 
 @user_passes_test(is_admin)
 def register_student(request):
-    if not request.user.is_staff:
+    if not is_admin(request.user):
         return redirect('dashboard')
 
     if request.method == 'POST':
@@ -108,7 +112,7 @@ def register_student(request):
 
 @user_passes_test(is_admin)
 def student_list(request):
-    if not request.user.is_staff:
+    if not is_admin(request.user):
         return redirect('dashboard')
         
     all_students = StudentProfile.objects.all().select_related('user', 'course', 'cohort')
@@ -162,6 +166,33 @@ def student_list(request):
 def student_detail(request, pk):
     student = get_object_or_404(StudentProfile, pk=pk)
     return render(request, 'accounts/student_detail.html', {'student': student})
+
+
+@user_passes_test(is_admin)
+def edit_student(request, pk):
+    student = get_object_or_404(StudentProfile, pk=pk)
+    user = student.user
+
+    if request.method == 'POST':
+        user_form = StudentUserEditForm(request.POST, instance=user)
+        profile_form = StudentProfileForm(request.POST, instance=student)
+
+        if user_form.is_valid() and profile_form.is_valid():
+            user_form.save()
+            profile_form.save()
+            messages.success(request, f"Student profile for {user.get_full_name() or user.username} updated successfully.")
+            return redirect('student_detail', pk=student.pk)
+        else:
+            messages.error(request, "Please correct the highlighted errors below before saving.")
+    else:
+        user_form = StudentUserEditForm(instance=user)
+        profile_form = StudentProfileForm(instance=student)
+
+    return render(request, 'accounts/edit_student.html', {
+        'student': student,
+        'user_form': user_form,
+        'profile_form': profile_form
+    })
 
 
 @login_required
@@ -287,8 +318,14 @@ def edit_user_view(request, pk):
             else:
                 messages.error(request, 'Passwords do not match.')
         
+        new_user_type = request.POST.get('user_type', 'student')
+        if new_user_type == 'admin':
+            user.is_staff = True
+        elif not user.is_superuser and user.is_staff and new_user_type != 'admin':
+            user.is_staff = False
+
         if hasattr(user, 'userprofile'):
-            user.userprofile.user_type = request.POST.get('user_type', 'student')
+            user.userprofile.user_type = new_user_type
             user.userprofile.save()
         
         user.save()

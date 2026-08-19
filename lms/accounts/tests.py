@@ -101,3 +101,78 @@ class CohortAndRegistrationTestCase(TestCase):
         self.assertContains(response, 'Diploma in Nursing')
         self.assertContains(response, 'Jan Cohort')
         self.assertContains(response, 'Jane Smith')
+
+    def test_edit_student_profile(self):
+        self.client.login(username='admin_test', password='Password123')
+        student_user = User.objects.create_user(
+            username='edit_student',
+            first_name='Original',
+            last_name='Name',
+            email='edit@example.com'
+        )
+        student = StudentProfile.objects.create(
+            user=student_user,
+            admission_number='ADM/2026/003',
+            date_of_birth='2000-01-01',
+            gender='M',
+            course=self.course_fee,
+            cohort=self.cohort,
+            phone_number='+254711111111',
+            address='Nakuru'
+        )
+
+        # GET edit student
+        res_get = self.client.get(reverse('edit_student', kwargs={'pk': student.pk}))
+        self.assertEqual(res_get.status_code, 200)
+
+        # POST edit student
+        res_post = self.client.post(reverse('edit_student', kwargs={'pk': student.pk}), {
+            'first_name': 'Updated',
+            'last_name': 'User',
+            'email': 'updated@example.com',
+            'admission_number': 'ADM/2026/003-UPDATED',
+            'course': self.course_fee.pk,
+            'cohort': self.cohort.pk,
+            'enrollment_date': '2026-01-15',
+            'phone_number': '+254799999999',
+            'id_number': 99999999,
+            'date_of_birth': '2000-01-01',
+            'gender': 'M',
+            'marital_status': 'Single',
+            'nationality': 'Kenyan',
+            'former_high_school': 'Central High',
+            'address': 'Eldoret, Kenya',
+            'parent_primary_name': 'Parent Name',
+            'parent_primary_phone': '+254700000000',
+            'parent_secondary_name': '',
+            'parent_secondary_phone': ''
+        })
+        self.assertEqual(res_post.status_code, 302)
+
+        student.refresh_from_db()
+        student_user.refresh_from_db()
+        self.assertEqual(student_user.first_name, 'Updated')
+        self.assertEqual(student.admission_number, 'ADM/2026/003-UPDATED')
+        self.assertEqual(student.address, 'Eldoret, Kenya')
+
+    def test_admin_user_type_permissions(self):
+        # Create user with user_type='admin'
+        admin_staff = User.objects.create_user(
+            username='admin_staff_type',
+            email='adminstaff@example.com',
+            password='Password123',
+            is_staff=True
+        )
+        if hasattr(admin_staff, 'userprofile'):
+            admin_staff.userprofile.user_type = 'admin'
+            admin_staff.userprofile.save()
+
+        self.client.login(username='admin_staff_type', password='Password123')
+
+        # Test student directory access
+        res = self.client.get(reverse('student_list'))
+        self.assertEqual(res.status_code, 200)
+
+        # Test user list access
+        res_users = self.client.get(reverse('user_list'))
+        self.assertEqual(res_users.status_code, 200)

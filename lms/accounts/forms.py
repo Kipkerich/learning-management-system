@@ -48,6 +48,8 @@ class AdminUserCreationForm(UserCreationForm):
     def save(self, commit=True):
         user = super().save(commit=False)
         user.email = self.cleaned_data["email"]
+        if self.cleaned_data.get("user_type") == 'admin':
+            user.is_staff = True
         
         if commit:
             user.save()
@@ -140,3 +142,14 @@ class StudentProfileForm(forms.ModelForm):
         self.fields['course'].empty_label = "-- Select Available Course --"
         self.fields['cohort'].queryset = Cohort.objects.all()
         self.fields['cohort'].empty_label = "-- Select Cohort --"
+
+
+class StudentUserEditForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ['first_name', 'last_name', 'email']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        for field in self.fields.values():
+            field.widget.attrs.update({'class': 'form-control'})

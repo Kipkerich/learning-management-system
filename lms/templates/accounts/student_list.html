@@ -90,9 +90,14 @@
                                         {% endif %}
                                     </td>
                                     <td class="text-end pe-3">
-                                        <a href="{% url 'student_detail' student.pk %}" class="btn btn-sm btn-outline-primary" title="View Profile">
-                                            <i class="fas fa-eye me-1"></i> View Profile
-                                        </a>
+                                        <div class="btn-group">
+                                            <a href="{% url 'student_detail' student.pk %}" class="btn btn-sm btn-outline-primary" title="View Profile">
+                                                <i class="fas fa-eye me-1"></i> View
+                                            </a>
+                                            <a href="{% url 'edit_student' student.pk %}" class="btn btn-sm btn-outline-warning" title="Edit Profile">
+                                                <i class="fas fa-edit me-1"></i> Edit
+                                            </a>
+                                        </div>
                                     </td>
                                 </tr>
                                 {% endfor %}

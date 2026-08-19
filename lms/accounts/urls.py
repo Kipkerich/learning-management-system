@@ -26,6 +26,7 @@ urlpatterns = [
     path('students/', views.student_list, name='student_list'),
     path('students/register/', views.register_student, name='register_student'),
     path('students/<int:pk>/', views.student_detail, name='student_detail'),
+    path('students/<int:pk>/edit/', views.edit_student, name='edit_student'),
 
     # Cohort Management Patterns
     path('cohorts/', views.cohort_list, name='cohort_list'),
