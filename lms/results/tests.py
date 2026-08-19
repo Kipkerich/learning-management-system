@@ -22,6 +22,9 @@ class ResultsModuleTestCase(TestCase):
             password='Password123',
             is_staff=True
         )
+        if hasattr(self.trainer, 'userprofile'):
+            self.trainer.userprofile.user_type = 'trainer'
+            self.trainer.userprofile.save()
         self.student_user = User.objects.create_user(
             username='student_alice',
             first_name='Alice',
@@ -59,12 +62,20 @@ class ResultsModuleTestCase(TestCase):
         self.client.login(username='admin_res', password='Password123')
         data = {
             'trainer': self.trainer.pk,
+            'course': self.course.pk,
             'unit': self.unit.pk,
             'cohort': self.cohort.pk
         }
         response = self.client.post(reverse('create_assignment'), data)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(TrainerUnitAssignment.objects.filter(trainer=self.trainer, unit=self.unit, cohort=self.cohort).exists())
+
+    def test_trainer_assignment_form_trainer_queryset(self):
+        from results.forms import TrainerUnitAssignmentForm
+        form = TrainerUnitAssignmentForm()
+        trainer_qs = form.fields['trainer'].queryset
+        self.assertIn(self.trainer, trainer_qs)
+        self.assertNotIn(self.admin, trainer_qs)
 
     def test_enter_results_as_trainer(self):
         assignment = TrainerUnitAssignment.objects.create(

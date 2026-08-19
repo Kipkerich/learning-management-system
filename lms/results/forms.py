@@ -6,13 +6,19 @@ from accounts.models import Cohort, StudentProfile
 
 class TrainerUnitAssignmentForm(forms.ModelForm):
     trainer = forms.ModelChoiceField(
-        queryset=User.objects.filter(is_active=True),
+        queryset=User.objects.filter(is_active=True, userprofile__user_type='trainer'),
         widget=forms.Select(attrs={'class': 'form-select'}),
         label="Select Trainer"
     )
+    course = forms.ModelChoiceField(
+        queryset=Course.objects.all(),
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_course'}),
+        label="Select Course",
+        required=False
+    )
     unit = forms.ModelChoiceField(
         queryset=Unit.objects.all().select_related('course'),
-        widget=forms.Select(attrs={'class': 'form-select'}),
+        widget=forms.Select(attrs={'class': 'form-select', 'id': 'id_unit'}),
         label="Select Course Unit"
     )
     cohort = forms.ModelChoiceField(
@@ -23,7 +29,17 @@ class TrainerUnitAssignmentForm(forms.ModelForm):
 
     class Meta:
         model = TrainerUnitAssignment
-        fields = ['trainer', 'unit', 'cohort']
+        fields = ['trainer', 'course', 'unit', 'cohort']
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['course'].empty_label = "-- Select Course --"
+        self.fields['unit'].empty_label = "-- Select Course Unit --"
+        self.fields['cohort'].empty_label = "-- Select Cohort --"
+
+        # Populate initial course if instance exists
+        if self.instance and self.instance.pk and self.instance.unit and self.instance.unit.course:
+            self.fields['course'].initial = self.instance.unit.course
 
 
 class StudentResultEntryForm(forms.ModelForm):
