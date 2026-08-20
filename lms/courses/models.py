@@ -1,6 +1,4 @@
 from django.db import models
-from django.db.models.signals import post_save, post_delete
-from django.dispatch import receiver
 
 class Course(models.Model):
     name = models.CharField(max_length=200, unique=True, verbose_name="Course Name")
@@ -27,21 +25,3 @@ class Unit(models.Model):
 
     def __str__(self):
         return f"{self.code}: {self.name}"
-
-
-@receiver(post_save, sender=Course)
-def sync_course_fee_on_save(sender, instance, created, **kwargs):
-    from finance.models import CourseFee
-    CourseFee.objects.update_or_create(
-        course_name=instance.name,
-        defaults={
-            'total_amount': instance.school_fee,
-            'description': instance.description or f"Fee for {instance.name}"
-        }
-    )
-
-
-@receiver(post_delete, sender=Course)
-def sync_course_fee_on_delete(sender, instance, **kwargs):
-    from finance.models import CourseFee
-    CourseFee.objects.filter(course_name=instance.name).delete()

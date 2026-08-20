@@ -176,51 +176,8 @@ def enter_results(request, assignment_id):
 @login_required
 @user_passes_test(is_admin)
 def admin_results_list(request):
-    selected_cohort_id = request.GET.get('cohort')
-    selected_course_name = request.GET.get('course')
-    selected_student_id = request.GET.get('student')
-
-    cohorts = Cohort.objects.all()
-    selected_cohort = None
-    selected_course = None
-    selected_student = None
-
-    courses_list = []
-    students_list = []
-    student_results = []
-
-    if selected_cohort_id:
-        selected_cohort = get_object_or_404(Cohort, pk=selected_cohort_id)
-        # Find all distinct courses for students in this cohort
-        from finance.models import CourseFee
-        students_in_cohort = StudentProfile.objects.filter(cohort=selected_cohort).select_related('course', 'user')
-
-        # Build list of distinct courses present in this cohort
-        course_names = set(s.course.course_name for s in students_in_cohort if s.course)
-        courses_list = CourseFee.objects.filter(course_name__in=course_names)
-
-        if selected_course_name:
-            selected_course = CourseFee.objects.filter(course_name=selected_course_name).first()
-            students_list = students_in_cohort.filter(course__course_name=selected_course_name)
-
-            if selected_student_id:
-                selected_student = get_object_or_404(StudentProfile, pk=selected_student_id)
-                student_results = StudentResult.objects.filter(
-                    student=selected_student,
-                    cohort=selected_cohort
-                ).select_related('unit', 'unit__course')
-
-    context = {
-        'cohorts': cohorts,
-        'selected_cohort': selected_cohort,
-        'courses_list': courses_list,
-        'selected_course': selected_course,
-        'selected_course_name': selected_course_name,
-        'students_list': students_list,
-        'selected_student': selected_student,
-        'student_results': student_results,
-    }
-    return render(request, 'results/admin_results_list.html', context)
+    results = StudentResult.objects.all().select_related('student', 'student__user', 'unit', 'unit__course', 'cohort')
+    return render(request, 'results/admin_results_list.html', {'results': results})
 
 
 @login_required

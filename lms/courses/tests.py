@@ -37,17 +37,6 @@ class CoursesAppTestCase(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'Diploma in IT')
 
-    def test_course_sync_with_course_fee(self):
-        from finance.models import CourseFee
-        new_course = Course.objects.create(
-            name='Certificate in Health Systems',
-            code='CHS101',
-            school_fee=45000.00
-        )
-        fee = CourseFee.objects.filter(course_name='Certificate in Health Systems').first()
-        self.assertIsNotNone(fee)
-        self.assertEqual(fee.total_amount, 45000.00)
-
     def test_course_detail_view(self):
         self.client.login(username='admin_user', password='Password123')
         response = self.client.get(reverse('course_detail', args=[self.course.pk]))

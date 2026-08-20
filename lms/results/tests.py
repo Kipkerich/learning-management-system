@@ -38,7 +38,10 @@ class ResultsModuleTestCase(TestCase):
             code='DIT',
             school_fee=50000.00
         )
-        self.course_fee = CourseFee.objects.get(course_name='Diploma in IT')
+        self.course_fee = CourseFee.objects.create(
+            course_name='Diploma in IT',
+            total_amount=50000.00
+        )
         self.unit = Unit.objects.create(
             course=self.course,
             name='Software Engineering',
@@ -93,29 +96,6 @@ class ResultsModuleTestCase(TestCase):
         self.assertEqual(float(res.exam_score), 55.0)
         self.assertEqual(res.total_score, 80.0)
         self.assertEqual(res.grade, 'A')
-
-    def test_hierarchical_admin_results_list(self):
-        self.client.login(username='admin_res', password='Password123')
-
-        # Level 1: Cohorts
-        res1 = self.client.get(reverse('admin_results_list'))
-        self.assertEqual(res1.status_code, 200)
-        self.assertContains(res1, 'Step 1: Select Cohort')
-
-        # Level 2: Courses
-        res2 = self.client.get(f"{reverse('admin_results_list')}?cohort={self.cohort.id}")
-        self.assertEqual(res2.status_code, 200)
-        self.assertContains(res2, 'Step 2: Select Course')
-
-        # Level 3: Students
-        res3 = self.client.get(f"{reverse('admin_results_list')}?cohort={self.cohort.id}&course={self.course_fee.course_name}")
-        self.assertEqual(res3.status_code, 200)
-        self.assertContains(res3, 'Step 3: Select Student')
-
-        # Level 4: Unit Results
-        res4 = self.client.get(f"{reverse('admin_results_list')}?cohort={self.cohort.id}&course={self.course_fee.course_name}&student={self.student_profile.id}")
-        self.assertEqual(res4.status_code, 200)
-        self.assertContains(res4, 'Results for')
 
     def test_admin_publish_and_transcript_view(self):
         res = StudentResult.objects.create(
