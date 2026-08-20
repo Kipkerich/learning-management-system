@@ -1,293 +1,104 @@
 {% extends 'base.html' %}
 
 {% block content %}
-<div class="container mt-4 mb-5">
+<div class="container mt-5 mb-5">
     <div class="row justify-content-center">
         <div class="col-lg-11">
             <div class="card shadow-lg border-0">
                 <div class="card-header bg-primary text-white py-3">
                     <div class="d-flex justify-content-between align-items-center">
                         <h4 class="mb-0"><i class="fas fa-user-graduate me-2"></i>New Student Admission</h4>
-                        <span class="badge bg-light text-primary fw-bold">Academic Portal</span>
+                        <span class="badge bg-light text-primary fw-bold">Academic Year 2026</span>
                     </div>
                 </div>
 
                 <div class="card-body p-4 p-md-5">
-
-                    <!-- Missing / Invalid Fields Summary Alert -->
-                    {% if user_form.errors or profile_form.errors %}
-                        <div class="alert alert-danger shadow-sm border-start border-4 border-danger mb-5" role="alert">
-                            <h5 class="alert-heading font-weight-bold mb-2">
-                                <i class="fas fa-exclamation-triangle me-2"></i>Form Submission Blocked
-                            </h5>
-                            <p class="mb-2">Please fill in or correct the following blank required field(s):</p>
-                            <ul class="mb-0 ps-3">
-                                {% for field in user_form %}
-                                    {% if field.errors %}
-                                        <li><strong>{{ field.label }}:</strong> {{ field.errors|first }}</li>
-                                    {% endif %}
-                                {% endfor %}
-                                {% for field in profile_form %}
-                                    {% if field.errors %}
-                                        <li><strong>{{ field.label }}:</strong> {{ field.errors|first }}</li>
-                                    {% endif %}
-                                {% endfor %}
-                                {% if user_form.non_field_errors %}
-                                    {% for err in user_form.non_field_errors %}
-                                        <li>{{ err }}</li>
-                                    {% endfor %}
-                                {% endif %}
-                                {% if profile_form.non_field_errors %}
-                                    {% for err in profile_form.non_field_errors %}
-                                        <li>{{ err }}</li>
-                                    {% endfor %}
-                                {% endif %}
-                            </ul>
-                        </div>
-                    {% endif %}
-
                     <form method="post" novalidate>
                         {% csrf_token %}
 
-                        <!-- Section 1: Account Login Credentials -->
                         <div class="section-block mb-5">
                             <h5 class="text-primary border-bottom pb-2 mb-4">
                                 <i class="fas fa-key me-2"></i>1. Account Login Credentials
                             </h5>
                             <div class="row">
+                                {% for field in user_form %}
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Username <span class="text-danger fw-bold">* Required</span>
-                                    </label>
-                                    {{ user_form.username }}
-                                    {% if user_form.username.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ user_form.username.errors|first }}</div>
+                                    <label class="form-label fw-bold">{{ field.label }}</label>
+                                    {{ field }}
+                                    {% if field.errors %}
+                                        <div class="text-danger small">{{ field.errors|first }}</div>
                                     {% endif %}
                                 </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Email Address <span class="text-danger fw-bold">* Required</span>
-                                    </label>
-                                    {{ user_form.email }}
-                                    {% if user_form.email.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ user_form.email.errors|first }}</div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">
-                                        First Name <span class="text-danger fw-bold">* Required</span>
-                                    </label>
-                                    {{ user_form.first_name }}
-                                    {% if user_form.first_name.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ user_form.first_name.errors|first }}</div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Last Name <span class="text-danger fw-bold">* Required</span>
-                                    </label>
-                                    {{ user_form.last_name }}
-                                    {% if user_form.last_name.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ user_form.last_name.errors|first }}</div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Password <span class="text-danger fw-bold">* Required</span>
-                                    </label>
-                                    {{ user_form.password }}
-                                    {% if user_form.password.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ user_form.password.errors|first }}</div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Confirm Password <span class="text-danger fw-bold">* Required</span>
-                                    </label>
-                                    {{ user_form.confirm_password }}
-                                    {% if user_form.confirm_password.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ user_form.confirm_password.errors|first }}</div>
-                                    {% endif %}
-                                </div>
+                                {% endfor %}
                             </div>
                         </div>
 
-                        <!-- Section 2: Academic Placement & Billing -->
                         <div class="section-block mb-5 p-4 bg-light rounded shadow-sm border-start border-4 border-success">
-                            <div class="d-flex justify-content-between align-items-center mb-4">
-                                <h5 class="text-success mb-0">
-                                    <i class="fas fa-graduation-cap me-2"></i>2. Academic Placement & Billing
-                                </h5>
-                                <a href="{% url 'cohort_list' %}" class="btn btn-sm btn-outline-success">
-                                    <i class="fas fa-cog me-1"></i> Manage Cohorts
-                                </a>
-                            </div>
+                            <h5 class="text-success mb-4">
+                                <i class="fas fa-file-invoice-dollar me-2"></i>2. Academic Placement & Billing
+                            </h5>
                             <div class="row">
-                                <div class="col-md-6 col-lg-3 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Admission Number <span class="text-danger fw-bold">* Required</span>
-                                    </label>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold">Admission Number</label>
                                     {{ profile_form.admission_number }}
-                                    {% if profile_form.admission_number.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.admission_number.errors|first }}</div>
-                                    {% endif %}
                                 </div>
-                                <div class="col-md-6 col-lg-3 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Select Course <span class="text-danger fw-bold">* Required</span>
-                                    </label>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold">Select Course (Billed Automatically)</label>
                                     {{ profile_form.course }}
-                                    {% if profile_form.course.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.course.errors|first }}</div>
-                                    {% endif %}
                                 </div>
-                                <div class="col-md-6 col-lg-3 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Enrollment Date <span class="text-danger fw-bold">* Required</span>
-                                    </label>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold">Enrollment Date</label>
                                     {{ profile_form.enrollment_date }}
-                                    {% if profile_form.enrollment_date.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.enrollment_date.errors|first }}</div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6 col-lg-3 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Cohort <span class="text-danger fw-bold">* Required</span>
-                                    </label>
-                                    {{ profile_form.cohort }}
-                                    {% if profile_form.cohort.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.cohort.errors|first }}</div>
-                                    {% endif %}
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Section 3: Student Personal Details -->
                         <div class="section-block mb-5">
                             <h5 class="text-primary border-bottom pb-2 mb-4">
                                 <i class="fas fa-id-card me-2"></i>3. Student Personal Details
                             </h5>
                             <div class="row">
                                 <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Personal Phone <span class="text-danger fw-bold">* Required</span>
-                                    </label>
+                                    <label class="form-label fw-bold">Personal Phone</label>
                                     {{ profile_form.phone_number }}
-                                    {% if profile_form.phone_number.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.phone_number.errors|first }}</div>
-                                    {% endif %}
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Date of Birth <span class="text-danger fw-bold">* Required</span>
-                                    </label>
-                                    {{ profile_form.date_of_birth }}
-                                    {% if profile_form.date_of_birth.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.date_of_birth.errors|first }}</div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Gender <span class="text-danger fw-bold">* Required</span>
-                                    </label>
-                                    {{ profile_form.gender }}
-                                    {% if profile_form.gender.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.gender.errors|first }}</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-bold">
-                                        National ID / Birth Cert <span class="badge bg-secondary">Optional</span>
-                                    </label>
+                                    <label class="form-label fw-bold">ID / Birth Cert No.</label>
                                     {{ profile_form.id_number }}
-                                    {% if profile_form.id_number.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.id_number.errors|first }}</div>
-                                    {% endif %}
                                 </div>
                                 <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Marital Status <span class="badge bg-secondary">Optional</span>
-                                    </label>
-                                    {{ profile_form.marital_status }}
-                                    {% if profile_form.marital_status.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.marital_status.errors|first }}</div>
-                                    {% endif %}
+                                    <label class="form-label fw-bold">Date of Birth</label>
+                                    {{ profile_form.date_of_birth }}
                                 </div>
-                                <div class="col-md-4 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Nationality <span class="badge bg-secondary">Optional</span>
-                                    </label>
-                                    {{ profile_form.nationality }}
-                                    {% if profile_form.nationality.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.nationality.errors|first }}</div>
-                                    {% endif %}
-                                </div>
-
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Former High School <span class="badge bg-secondary">Optional</span>
-                                    </label>
-                                    {{ profile_form.former_high_school }}
-                                    {% if profile_form.former_high_school.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.former_high_school.errors|first }}</div>
-                                    {% endif %}
-                                </div>
-                                <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Home / Residential Address <span class="badge bg-secondary">Optional</span>
-                                    </label>
+                                <div class="col-12 mb-3">
+                                    <label class="form-label fw-bold">Home / Residential Address</label>
                                     {{ profile_form.address }}
-                                    {% if profile_form.address.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.address.errors|first }}</div>
-                                    {% endif %}
                                 </div>
                             </div>
                         </div>
 
-                        <!-- Section 4: Parent / Guardian Information -->
                         <div class="section-block mb-5">
                             <h5 class="text-primary border-bottom pb-2 mb-4">
                                 <i class="fas fa-users me-2"></i>4. Parent / Guardian Information
                             </h5>
                             <div class="row mb-3">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Primary Guardian Name <span class="badge bg-secondary">Optional</span>
-                                    </label>
+                                    <label class="form-label fw-bold text-muted">Primary Guardian Name</label>
                                     {{ profile_form.parent_primary_name }}
-                                    {% if profile_form.parent_primary_name.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.parent_primary_name.errors|first }}</div>
-                                    {% endif %}
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Primary Contact Phone <span class="badge bg-secondary">Optional</span>
-                                    </label>
+                                    <label class="form-label fw-bold text-muted">Primary Contact Phone</label>
                                     {{ profile_form.parent_primary_phone }}
-                                    {% if profile_form.parent_primary_phone.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.parent_primary_phone.errors|first }}</div>
-                                    {% endif %}
                                 </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Secondary Guardian Name <span class="badge bg-secondary">Optional</span>
-                                    </label>
+                                    <label class="form-label fw-bold text-muted">Secondary Guardian Name</label>
                                     {{ profile_form.parent_secondary_name }}
-                                    {% if profile_form.parent_secondary_name.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.parent_secondary_name.errors|first }}</div>
-                                    {% endif %}
                                 </div>
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">
-                                        Secondary Contact Phone <span class="badge bg-secondary">Optional</span>
-                                    </label>
+                                    <label class="form-label fw-bold text-muted">Secondary Contact Phone</label>
                                     {{ profile_form.parent_secondary_phone }}
-                                    {% if profile_form.parent_secondary_phone.errors %}
-                                        <div class="text-danger small mt-1"><i class="fas fa-exclamation-circle me-1"></i>{{ profile_form.parent_secondary_phone.errors|first }}</div>
-                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -306,6 +117,7 @@
 </div>
 
 <style>
+    /* Styling for a professional school portal look */
     body { background-color: #f8f9fa; }
     .card { border-radius: 12px; }
     .section-block h5 { font-size: 1.1rem; letter-spacing: 0.5px; }

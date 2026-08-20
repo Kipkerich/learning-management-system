@@ -5,7 +5,6 @@ from django.db.models import Sum
 from .models import CourseFee, Payment, Invoice
 from .forms import CourseFeeForm, PaymentForm
 from accounts.models import StudentProfile
-from courses.models import Course
 
 @staff_member_required
 def finance_index(request):
@@ -14,25 +13,14 @@ def finance_index(request):
     and view all student balances.
     """
     if request.method == 'POST':
+        # Logic for adding a new Course Fee structure
         form = CourseFeeForm(request.POST)
         if form.is_valid():
             form.save()
-            messages.success(request, "School fee structure added/updated successfully.")
+            messages.success(request, "New Course Fee structure added.")
             return redirect('finance_index')
-    else:
-        # Sync CourseFee with Course objects so all available courses show up
-        for course in Course.objects.all():
-            fee_obj, created = CourseFee.objects.get_or_create(
-                course_name=course.name,
-                defaults={
-                    'total_amount': course.school_fee,
-                    'description': course.description
-                }
-            )
-            if not created and course.school_fee != fee_obj.total_amount and course.school_fee > 0:
-                fee_obj.total_amount = course.school_fee
-                fee_obj.save()
 
+    # Data for the hub
     courses = CourseFee.objects.all()
     students = StudentProfile.objects.all().select_related('user', 'course')
     
@@ -64,7 +52,7 @@ def record_payment(request, invoice_id):
             
             # Check if invoice is fully settled
             total_paid = invoice.payments.aggregate(Sum('amount_paid'))['amount_paid__sum'] or 0
-            if total_paid >= invoice.amount:
+            if total_paid >= invoice.amount: # assuming 'amount' is stored on Invoice
                 invoice.is_paid = True
                 invoice.save()
 
@@ -79,7 +67,7 @@ def record_payment(request, invoice_id):
         'student': student
     })
     
-# Update Course Fee
+# Update Course
 @staff_member_required
 def edit_course(request, pk):
     course = get_object_or_404(CourseFee, pk=pk)
@@ -87,13 +75,13 @@ def edit_course(request, pk):
         form = CourseFeeForm(request.POST, instance=course)
         if form.is_valid():
             form.save()
-            messages.info(request, "Course fee updated successfully.")
+            messages.info(request, "Course updated successfully.")
             return redirect('finance_index')
     else:
         form = CourseFeeForm(instance=course)
     return render(request, 'finance/edit_course.html', {'form': form, 'course': course})
 
-# Delete Course Fee
+# Delete Course
 @staff_member_required
 def delete_course(request, pk):
     course = get_object_or_404(CourseFee, pk=pk)

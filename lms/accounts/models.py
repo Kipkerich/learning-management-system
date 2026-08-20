@@ -5,7 +5,6 @@ from django.dispatch import receiver
 from django.db.models import Sum
 from django.utils import timezone
 
-
 class UserProfile(models.Model):
     USER_TYPES = (
         ('student', 'Student'),
@@ -23,23 +22,10 @@ class UserProfile(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.get_user_type_display()}"
 
-
 @receiver(post_save, sender=User)
 def create_user_profile(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
-
-
-class Cohort(models.Model):
-    name = models.CharField(max_length=100, unique=True, verbose_name="Cohort Name")
-    description = models.TextField(blank=True)
-    created_at = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        ordering = ['name']
-
-    def __str__(self):
-        return self.name
 
 
 class StudentProfile(models.Model):
@@ -49,7 +35,6 @@ class StudentProfile(models.Model):
     gender = models.CharField(max_length=10, choices=[('M', 'Male'), ('F', 'Female')])
     former_high_school = models.CharField(max_length=200, blank=True)
     course = models.ForeignKey('finance.CourseFee', on_delete=models.SET_NULL, null=True, blank=True)
-    cohort = models.ForeignKey(Cohort, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     marital_status = models.CharField(max_length=20, choices=[
         ('Single', 'Single'), 
@@ -65,32 +50,27 @@ class StudentProfile(models.Model):
     parent_secondary_phone = models.CharField(max_length=20, blank=True, null=True)
     address = models.TextField(blank=True, null=True)
     
-    # Financial Link
-    is_fully_paid = models.BooleanField(default=False)
 
-    # Graduation Eligibility Fields
-    is_eligible_for_graduation = models.BooleanField(default=False)
-    graduation_status = models.CharField(max_length=20, choices=[
-        ('Pending', 'Pending Review'),
-        ('Eligible', 'Eligible for Graduation'),
-        ('Not Eligible', 'Not Eligible'),
-        ('Graduated', 'Graduated')
-    ], default='Pending')
-    graduation_notes = models.TextField(blank=True, null=True)
+    # Financial Link (We can expand this later)
+    is_fully_paid = models.BooleanField(default=False)
 
     def __str__(self):
         return f"{self.user.get_full_name()} ({self.admission_number})"
 
-    # --- Finance Logic ---
+
+# --- Finance Logic ---
+
     @property
     def total_invoiced(self):
         """Calculates total amount this student has been billed."""
+        # This looks at the Invoice model in the finance app via the 'invoices' related_name
         return self.invoices.aggregate(Sum('fee_type__amount'))['fee_type__amount__sum'] or 0
 
     @property
     def total_paid(self):
         """Calculates total amount this student has actually paid."""
         from finance.models import Payment
+        from django.db.models import Sum
         return Payment.objects.filter(invoice__student=self).aggregate(Sum('amount_paid'))['amount_paid__sum'] or 0
 
     @property
@@ -100,5 +80,5 @@ class StudentProfile(models.Model):
 
     @property
     def is_fully_paid(self):
-        """Used by template badges to show 'Cleared' or 'Balance'."""
+        """Used by our template badges to show 'Cleared' or 'Balance'."""
         return self.balance <= 0
