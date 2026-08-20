@@ -28,6 +28,8 @@ INSTALLED_APPS = [
     "assignments",
     "timetable",
     "finance",
+    "courses",
+    "results",
 ]
 
 MIDDLEWARE = [
