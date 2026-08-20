@@ -22,7 +22,10 @@ A professional, role-based Learning Management System built with Django. This pl
 
 ### 👥 Role-Based Dashboard
 
-* **Dynamic UI:** Dashboard icons appear or disappear automatically based on user permissions (`is_staff`).
+* **Dynamic UI & Left Sidebar Navigation:** Responsive left-side navbar layout with drawer toggle for mobile devices.
+* **Course-Based Admissions:** Student admission forms directly populate available options from the central Courses and Units module.
+* **Hierarchical Results Verification:** Results module organizes student performance verification via a 4-tier drill-down flow (Cohorts → Courses → Students → Unit Results).
+* **Trainer Assignment Protection:** Conflict prevention ensures a specific unit in a given cohort can only be assigned to a single trainer.
 * **Course Filtering:** Students and Staff can filter the global timetable to see only the schedule for a specific course.
 * **Flash Feedback:** Instant success/error alerts for all administrative actions with auto-dismiss functionality.
 
