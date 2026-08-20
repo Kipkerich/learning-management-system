@@ -4,98 +4,338 @@
     {% load static %}
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}LXP {% endblock %}</title>
+    <title>{% block title %}LXP LMS{% endblock %}</title>
     
     <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- Custom CSS -->
+
     <style>
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-bg: #1e293b;
+            --sidebar-hover: #334155;
+            --sidebar-active: #2563eb;
+            --sidebar-text: #94a3b8;
+            --sidebar-text-active: #ffffff;
+        }
+
         body {
+            min-height: 100vh;
+            background-color: #f8fafc;
+            overflow-x: hidden;
             display: flex;
             flex-direction: column;
+        }
+
+        .app-wrapper {
+            display: flex;
+            flex: 1;
+            width: 100%;
+        }
+
+        /* Sidebar Styling */
+        #sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--sidebar-bg);
+            color: var(--sidebar-text);
+            transition: all 0.3s ease-in-out;
+            z-index: 1040;
+            display: flex;
+            flex-direction: column;
+            flex-shrink: 0;
             min-height: 100vh;
         }
-        .content {
-            flex: 1;
+
+        #sidebar .sidebar-brand {
+            padding: 1.25rem 1.5rem;
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            text-decoration: none;
         }
+
+        #sidebar .sidebar-nav {
+            padding: 0.75rem 0;
+            list-style: none;
+            margin: 0;
+            flex-grow: 1;
+            overflow-y: auto;
+        }
+
+        #sidebar .nav-section-title {
+            padding: 0.75rem 1.5rem 0.35rem;
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+        }
+
+        #sidebar .nav-link {
+            padding: 0.65rem 1.5rem;
+            color: var(--sidebar-text);
+            display: flex;
+            align-items: center;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: background-color 0.2s, color 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        #sidebar .nav-link i {
+            width: 1.5rem;
+            font-size: 1rem;
+            margin-right: 0.75rem;
+            text-align: center;
+        }
+
+        #sidebar .nav-link:hover {
+            color: #ffffff;
+            background-color: var(--sidebar-hover);
+        }
+
+        #sidebar .nav-link.active {
+            color: var(--sidebar-text-active);
+            background-color: var(--sidebar-active);
+            border-left-color: #60a5fa;
+        }
+
+        #sidebar .sidebar-footer {
+            padding: 1rem 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            background-color: rgba(0, 0, 0, 0.15);
+        }
+
+        /* Main Content Styling */
+        .main-content {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            transition: all 0.3s ease-in-out;
+        }
+
+        .top-navbar {
+            background-color: #ffffff;
+            border-bottom: 1px solid #e2e8f0;
+            padding: 0.75rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .content-body {
+            padding: 1.5rem;
+            flex-grow: 1;
+        }
+
         .footer {
-            background-color: #f8f9fa;
-            padding: 20px 0;
+            background-color: #ffffff;
+            border-top: 1px solid #e2e8f0;
+            padding: 1rem 1.5rem;
+            color: #64748b;
+            font-size: 0.85rem;
+        }
+
+        /* Responsive Sidebar for Mobile/Tablet */
+        @media (max-width: 991.98px) {
+            #sidebar {
+                position: fixed;
+                top: 0;
+                bottom: 0;
+                left: calc(-1 * var(--sidebar-width));
+                height: 100vh;
+            }
+
+            #sidebar.show {
+                left: 0;
+                box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.25);
+            }
+
+            .sidebar-backdrop {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: rgba(0, 0, 0, 0.5);
+                z-index: 1030;
+            }
+
+            .sidebar-backdrop.show {
+                display: block;
+            }
         }
     </style>
     <script src="{% static 'js/main.js' %}"></script>
 </head>
 <body>
-    <!-- Navbar -->
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-        <div class="container">
-            <a class="navbar-brand" href="{% url 'dashboard' %}">LXP</a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                {% if user.is_authenticated %}
-                <ul class="navbar-nav me-auto">
-                    
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'dashboard' %}">Dashboard</a>
-                    </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'profile' %}">Profile</a>
-                    </li>
-                   
-                </ul>
-                 {% endif %}
-                <ul class="navbar-nav">
-                    {% if user.is_authenticated %}
-                                        
-                    <!-- Show register link only to superusers -->
-                    {% if user.is_superuser %}
-                    <li class="nav-item">
-                         <a class="nav-link" href="{% url 'user_list' %}">User List</a>
-                        <a class="nav-link" href="{% url 'admin_register' %}">Register</a>
-                    </li>
-                    {% endif %}
-                    
-                    <li class="nav-item">
-                        <form action="{% url 'logout' %}" method="post" class="d-inline">
-                            {% csrf_token %}
-                            <button type="submit" class="btn btn-link nav-link">Logout</button>
-                        </form>
-                    </li>
-                    {% else %}
-                    <li class="nav-item">
-                        <a class="nav-link" href="{% url 'login' %}">Login</a>
-                    </li>
-                    {% endif %}
-                </ul>
-            </div>
-        </div>
-    </nav>
 
-    <!-- Main Content -->
-    <div class="content container my-4">
-        {% if messages %}
-            {% for message in messages %}
-            <div class="alert alert-{{ message.tags }} alert-dismissible fade show">
-                {{ message }}
-                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    <div class="app-wrapper">
+        <!-- Sidebar Backdrop for Mobile -->
+        <div class="sidebar-backdrop" id="sidebarBackdrop"></div>
+
+        <!-- Left Sidebar Navigation -->
+        <nav id="sidebar">
+            <a href="{% url 'dashboard' %}" class="sidebar-brand">
+                <span><i class="fas fa-graduation-cap me-2 text-primary"></i>LXP Portal</span>
+                <button type="button" class="btn-close btn-close-white d-lg-none" id="sidebarCloseBtn" aria-label="Close"></button>
+            </a>
+
+            <ul class="sidebar-nav">
+                <li class="nav-section-title">Main Menu</li>
+                <li>
+                    <a href="{% url 'dashboard' %}" class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}">
+                        <i class="fas fa-th-large"></i> Dashboard
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'profile' %}" class="nav-link {% if request.resolver_match.url_name == 'profile' %}active{% endif %}">
+                        <i class="fas fa-user-circle"></i> Profile
+                    </a>
+                </li>
+
+                <li class="nav-section-title">Academics & Learning</li>
+                <li>
+                    <a href="{% url 'timetable' %}" class="nav-link {% if request.resolver_match.url_name == 'timetable' %}active{% endif %}">
+                        <i class="fas fa-calendar-alt"></i> Timetable
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'resources' %}" class="nav-link {% if request.resolver_match.url_name == 'resources' %}active{% endif %}">
+                        <i class="fas fa-book-open"></i> Resources
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'assignments' %}" class="nav-link {% if request.resolver_match.url_name == 'assignments' %}active{% endif %}">
+                        <i class="fas fa-tasks"></i> Assignments
+                    </a>
+                </li>
+
+                {% if request.user.student_profile %}
+                <li>
+                    <a href="{% url 'student_my_results' %}" class="nav-link {% if request.resolver_match.url_name == 'student_my_results' %}active{% endif %}">
+                        <i class="fas fa-file-invoice"></i> My Results
+                    </a>
+                </li>
+                {% else %}
+                <li>
+                    <a href="{% url 'trainer_portal' %}" class="nav-link {% if request.resolver_match.url_name == 'trainer_portal' or request.resolver_match.url_name == 'enter_results' %}active{% endif %}">
+                        <i class="fas fa-pen-nib"></i> Trainer Results
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if request.user.is_staff or request.user.is_superuser or request.user.userprofile.user_type == 'admin' %}
+                <li class="nav-section-title">Administration</li>
+                <li>
+                    <a href="{% url 'course_list' %}" class="nav-link {% if 'course' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="fas fa-book"></i> Courses & Units
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'register_student' %}" class="nav-link {% if request.resolver_match.url_name == 'register_student' %}active{% endif %}">
+                        <i class="fas fa-user-plus"></i> Student Admission
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'student_list' %}" class="nav-link {% if request.resolver_match.url_name == 'student_list' or request.resolver_match.url_name == 'student_detail' or request.resolver_match.url_name == 'edit_student' %}active{% endif %}">
+                        <i class="fas fa-address-book"></i> Student Directory
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'cohort_list' %}" class="nav-link {% if 'cohort' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="fas fa-users-class"></i> Cohorts
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'assignment_list' %}" class="nav-link {% if 'assignment' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="fas fa-chalkboard-teacher"></i> Trainer Assignments
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'admin_results_list' %}" class="nav-link {% if 'verify' in request.resolver_match.url_name or 'admin_results' in request.resolver_match.url_name %}active{% endif %}">
+                        <i class="fas fa-check-double"></i> Verify Results
+                    </a>
+                </li>
+                {% endif %}
+
+                {% if request.user.is_superuser %}
+                <li class="nav-section-title">System & Users</li>
+                <li>
+                    <a href="{% url 'user_list' %}" class="nav-link {% if request.resolver_match.url_name == 'user_list' %}active{% endif %}">
+                        <i class="fas fa-users-cog"></i> User Management
+                    </a>
+                </li>
+                <li>
+                    <a href="{% url 'admin_register' %}" class="nav-link {% if request.resolver_match.url_name == 'admin_register' %}active{% endif %}">
+                        <i class="fas fa-user-shield"></i> Register Staff
+                    </a>
+                </li>
+                {% endif %}
+            </ul>
+
+            <div class="sidebar-footer">
+                {% if user.is_authenticated %}
+                <div class="d-flex align-items-center justify-content-between">
+                    <div class="text-truncate me-2">
+                        <div class="fw-bold text-white small text-truncate">{{ user.get_full_name|default:user.username }}</div>
+                        <div class="text-muted small text-capitalize text-truncate" style="font-size: 0.75rem;">{{ user.userprofile.user_type|default:"User" }}</div>
+                    </div>
+                    <form action="{% url 'logout' %}" method="post" class="m-0">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-outline-light btn-sm" title="Logout">
+                            <i class="fas fa-sign-out-alt"></i>
+                        </button>
+                    </form>
+                </div>
+                {% else %}
+                <a href="{% url 'login' %}" class="btn btn-primary btn-sm w-100">
+                    <i class="fas fa-sign-in-alt me-1"></i> Login
+                </a>
+                {% endif %}
             </div>
-            {% endfor %}
-        {% endif %}
-        <div class="container mt-3">
-    {% if messages %}
-        {% for message in messages %}
-            <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm border-0" role="alert" id="django-message">
+        </nav>
+
+        <!-- Main Content View Area -->
+        <div class="main-content">
+            <!-- Top Header Bar for Mobile Toggle & User Info -->
+            <header class="top-navbar shadow-sm">
+                <button class="btn btn-light d-lg-none me-2" type="button" id="sidebarToggleBtn">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <div class="fw-bold text-dark d-flex align-items-center">
+                    <i class="fas fa-university text-primary me-2 d-none d-sm-inline"></i>
+                    <span>Wama Training Institute</span>
+                </div>
+                <div>
+                    {% if user.is_authenticated %}
+                    <span class="badge bg-primary-subtle text-primary border border-primary px-3 py-2 rounded-pill">
+                        <i class="fas fa-user me-1"></i> {{ user.username }}
+                    </span>
+                    {% endif %}
+                </div>
+            </header>
+
+            <div class="content-body">
+                {% if messages %}
+                    {% for message in messages %}
+                        <div class="alert alert-{{ message.tags|default:'info' }} alert-dismissible fade show shadow-sm border-0 mb-4" role="alert" id="django-message">
                             <div class="d-flex align-items-center">
                                 {% if message.tags == 'success' %}
-                                    <i class="fas fa-check-circle me-2"></i>
-                                {% elif message.tags == 'error' %}
-                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <i class="fas fa-check-circle me-2 text-success fs-5"></i>
+                                {% elif message.tags == 'error' or message.tags == 'danger' %}
+                                    <i class="fas fa-exclamation-triangle me-2 text-danger fs-5"></i>
                                 {% else %}
-                                    <i class="fas fa-info-circle me-2"></i>
+                                    <i class="fas fa-info-circle me-2 text-info fs-5"></i>
                                 {% endif %}
                                 <div>{{ message }}</div>
                             </div>
@@ -103,25 +343,42 @@
                         </div>
                     {% endfor %}
                 {% endif %}
-            </div>
-                    
-        {% block content %}
-        {% endblock %}
-    </div>
-    
 
-    <!-- Footer -->
-    <footer class="footer mt-auto">
-        <div class="container text-center">
-            <p class="mb-0">&copy; {% now "Y" %} Wama Training Institute. All rights reserved.</p>
+                {% block content %}
+                {% endblock %}
+            </div>
+
+            <!-- Footer -->
+            <footer class="footer mt-auto">
+                <div class="container-fluid text-center">
+                    <p class="mb-0">&copy; {% now "Y" %} Wama Training Institute. All rights reserved.</p>
+                </div>
+            </footer>
         </div>
-    </footer>
+    </div>
 
     <!-- Bootstrap JS and dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const sidebar = document.getElementById('sidebar');
+            const toggleBtn = document.getElementById('sidebarToggleBtn');
+            const closeBtn = document.getElementById('sidebarCloseBtn');
+            const backdrop = document.getElementById('sidebarBackdrop');
+
+            function toggleSidebar() {
+                sidebar.classList.toggle('show');
+                backdrop.classList.toggle('show');
+            }
+
+            if (toggleBtn) toggleBtn.addEventListener('click', toggleSidebar);
+            if (closeBtn) closeBtn.addEventListener('click', toggleSidebar);
+            if (backdrop) backdrop.addEventListener('click', toggleSidebar);
+        });
+    </script>
     
     {% block scripts %}
-  
     {% endblock %}
 </body>
 </html>

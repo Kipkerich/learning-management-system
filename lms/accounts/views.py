@@ -3,7 +3,8 @@ from django.contrib.auth import login, authenticate, logout
 from django.contrib.auth.decorators import login_required, user_passes_test
 from django.contrib.auth.forms import AuthenticationForm
 
-from finance.models import Invoice, CourseFee, FeeStructure
+from finance.models import Invoice, FeeStructure
+from courses.models import Course
 from .forms import AdminUserCreationForm, UserCreationForm, StudentProfileForm, StudentUserEditForm, CohortForm
 from django.contrib.auth.models import User
 from .models import UserProfile, StudentProfile, Cohort
@@ -83,8 +84,8 @@ def register_student(request):
                     # AUTOMATIC BILLING BASED ON COURSE
                     if profile.course:
                         fee_type, _ = FeeStructure.objects.get_or_create(
-                            name=profile.course.course_name,
-                            defaults={'amount': profile.course.total_amount, 'description': profile.course.description}
+                            name=profile.course.name,
+                            defaults={'amount': profile.course.school_fee, 'description': profile.course.description}
                         )
                         Invoice.objects.create(
                             student=profile,
@@ -101,7 +102,7 @@ def register_student(request):
         user_form = UserCreationForm()
         profile_form = StudentProfileForm(initial={'enrollment_date': timezone.now().date()})
         
-    courses = CourseFee.objects.all()
+    courses = Course.objects.all()
 
     return render(request, 'accounts/register_student.html', {
         'user_form': user_form,
@@ -123,7 +124,7 @@ def student_list(request):
 
     for student in all_students:
         c_id = student.course.id if student.course else None
-        c_name = student.course.course_name if student.course else "Unassigned Course"
+        c_name = student.course.name if student.course else "Unassigned Course"
         coh_id = student.cohort.id if student.cohort else None
         coh_name = student.cohort.name if student.cohort else "Unassigned Cohort"
 

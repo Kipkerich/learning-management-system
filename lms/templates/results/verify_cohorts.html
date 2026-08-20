@@ -1,0 +1,63 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Results - Select Cohort - LMS{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-light p-3 rounded shadow-sm">
+            <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">
+                <i class="fas fa-layer-group me-1"></i> Cohorts
+            </li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-graduation-cap text-primary me-2"></i>Verify Results: Select Cohort</h2>
+            <p class="text-muted small mb-0">Select a cohort below to view courses and verify student academic records.</p>
+        </div>
+        <a href="{% url 'assignment_list' %}" class="btn btn-outline-primary shadow-sm">
+            <i class="fas fa-chalkboard-teacher me-1"></i> Trainer Assignments
+        </a>
+    </div>
+
+    {% if cohort_data %}
+    <div class="row">
+        {% for item in cohort_data %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card border-0 shadow-sm h-100 hover-card">
+                <div class="card-body p-4 d-flex flex-column">
+                    <div class="d-flex justify-content-between align-items-start mb-3">
+                        <span class="badge bg-primary fs-6 px-3 py-2"><i class="fas fa-users me-1"></i> {{ item.cohort.name }}</span>
+                        <span class="badge bg-light text-dark border"><i class="fas fa-file-alt me-1"></i> {{ item.results_count }} Results Recorded</span>
+                    </div>
+                    <p class="text-muted small flex-grow-1">
+                        {{ item.cohort.description|default:"No description provided for this cohort." }}
+                    </p>
+                    <div class="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
+                        <small class="text-muted"><i class="fas fa-user-graduate me-1"></i> {{ item.total_students }} Enrolled Student(s)</small>
+                        <a href="{% url 'verify_results_courses' item.cohort.id %}" class="btn btn-primary btn-sm px-3 rounded-pill">
+                            Select Cohort <i class="fas fa-chevron-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center py-5 shadow-sm">
+        <i class="fas fa-info-circle fa-3x mb-3 text-info"></i>
+        <h5>No Cohorts Found</h5>
+        <p class="text-muted mb-0">No active student cohorts have been created yet.</p>
+    </div>
+    {% endif %}
+</div>
+
+<style>
+    .hover-card { transition: transform 0.2s, box-shadow 0.2s; border-radius: 12px; }
+    .hover-card:hover { transform: translateY(-4px); box-shadow: 0 10px 20px rgba(0,0,0,0.1) !important; }
+</style>
+{% endblock %}

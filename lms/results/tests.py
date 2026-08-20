@@ -54,7 +54,7 @@ class ResultsModuleTestCase(TestCase):
             admission_number='ADM/DIT/001',
             date_of_birth='2002-01-01',
             gender='F',
-            course=self.course_fee,
+            course=self.course,
             cohort=self.cohort
         )
 
@@ -69,6 +69,38 @@ class ResultsModuleTestCase(TestCase):
         response = self.client.post(reverse('create_assignment'), data)
         self.assertEqual(response.status_code, 302)
         self.assertTrue(TrainerUnitAssignment.objects.filter(trainer=self.trainer, unit=self.unit, cohort=self.cohort).exists())
+
+    def test_prevent_duplicate_trainer_assignment_for_same_unit_and_cohort(self):
+        TrainerUnitAssignment.objects.create(
+            trainer=self.trainer,
+            unit=self.unit,
+            cohort=self.cohort
+        )
+        another_trainer = User.objects.create_user(
+            username='trainer_alice',
+            first_name='Alice',
+            last_name='Trainer',
+            email='alice_trainer@example.com',
+            password='Password123',
+            is_staff=True
+        )
+        if hasattr(another_trainer, 'userprofile'):
+            another_trainer.userprofile.user_type = 'trainer'
+            another_trainer.userprofile.save()
+
+        self.client.login(username='admin_res', password='Password123')
+        data = {
+            'trainer': another_trainer.pk,
+            'course': self.course.pk,
+            'unit': self.unit.pk,
+            'cohort': self.cohort.pk
+        }
+        response = self.client.post(reverse('create_assignment'), data)
+        self.assertEqual(response.status_code, 200) # Form re-rendered with error
+        self.assertIn(
+            f"Unit '{self.unit.code}: {self.unit.name}' for cohort '{self.cohort.name}' is already assigned to trainer {self.trainer.get_full_name()}. It cannot be assigned to another trainer.",
+            response.context['form'].non_field_errors()
+        )
 
     def test_trainer_assignment_form_trainer_queryset(self):
         from results.forms import TrainerUnitAssignmentForm
@@ -108,6 +140,27 @@ class ResultsModuleTestCase(TestCase):
         )
 
         self.client.login(username='admin_res', password='Password123')
+
+        # Test Step 1: Verify Results Cohorts List
+        cohorts_res = self.client.get(reverse('admin_results_list'))
+        self.assertEqual(cohorts_res.status_code, 200)
+        self.assertContains(cohorts_res, 'Jan Cohort')
+
+        # Test Step 2: Verify Results Courses List
+        courses_res = self.client.get(reverse('verify_results_courses', args=[self.cohort.pk]))
+        self.assertEqual(courses_res.status_code, 200)
+        self.assertContains(courses_res, 'Diploma in IT')
+
+        # Test Step 3: Verify Results Students List
+        students_res = self.client.get(reverse('verify_results_students', args=[self.cohort.pk, self.course.pk]))
+        self.assertEqual(students_res.status_code, 200)
+        self.assertContains(students_res, 'Alice Smith')
+
+        # Test Step 4: Verify Student Unit Results
+        units_res = self.client.get(reverse('verify_student_units', args=[self.cohort.pk, self.course.pk, self.student_profile.pk]))
+        self.assertEqual(units_res.status_code, 200)
+        self.assertContains(units_res, 'Software Engineering')
+
         # Toggle publish
         response = self.client.get(reverse('publish_results_toggle', args=[res.pk]))
         self.assertEqual(response.status_code, 302)

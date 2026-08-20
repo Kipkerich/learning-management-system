@@ -3,6 +3,7 @@ from django.urls import reverse
 from django.contrib.auth.models import User
 from accounts.models import Cohort, StudentProfile
 from finance.models import CourseFee
+from courses.models import Course
 
 class CohortAndRegistrationTestCase(TestCase):
     def setUp(self):
@@ -16,6 +17,11 @@ class CohortAndRegistrationTestCase(TestCase):
             course_name='Diploma in Nursing',
             total_amount=50000.00,
             description='Nursing course fee'
+        )
+        self.course = Course.objects.create(
+            name='Diploma in Nursing',
+            code='NURS',
+            school_fee=60000.00
         )
         self.cohort = Cohort.objects.create(
             name='Jan Cohort',
@@ -50,7 +56,7 @@ class CohortAndRegistrationTestCase(TestCase):
         }
         profile_data = {
             'admission_number': 'ADM/2026/001',
-            'course': self.course_fee.pk,
+            'course': self.course.pk,
             'cohort': self.cohort.pk,
             'enrollment_date': '2026-01-15',
             'phone_number': '+254712345678',
@@ -90,7 +96,7 @@ class CohortAndRegistrationTestCase(TestCase):
             admission_number='ADM/2026/002',
             date_of_birth='2001-01-01',
             gender='F',
-            course=self.course_fee,
+            course=self.course,
             cohort=self.cohort,
             phone_number='+254722222222',
             address='Mombasa, Kenya'
@@ -115,7 +121,7 @@ class CohortAndRegistrationTestCase(TestCase):
             admission_number='ADM/2026/003',
             date_of_birth='2000-01-01',
             gender='M',
-            course=self.course_fee,
+            course=self.course,
             cohort=self.cohort,
             phone_number='+254711111111',
             address='Nakuru'
@@ -131,7 +137,7 @@ class CohortAndRegistrationTestCase(TestCase):
             'last_name': 'User',
             'email': 'updated@example.com',
             'admission_number': 'ADM/2026/003-UPDATED',
-            'course': self.course_fee.pk,
+            'course': self.course.pk,
             'cohort': self.cohort.pk,
             'enrollment_date': '2026-01-15',
             'phone_number': '+254799999999',
