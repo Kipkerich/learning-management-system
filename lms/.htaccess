@@ -1,0 +1,15 @@
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION BEGIN
+PassengerAppRoot "/home/wamahosp/repositories/learning-management-system/lms"
+PassengerBaseURI "/"
+PassengerPython "/home/wamahosp/virtualenv/repositories/learning-management-system/lms/3.11/bin/python"
+PassengerAppLogFile "/home/wamahosp/logs/passenger.log"
+# DO NOT REMOVE. CLOUDLINUX PASSENGER CONFIGURATION END
+# Serve static files directly
+RewriteEngine On
+
+# Redirect /static requests to the collected staticfiles directory
+RewriteRule ^static/(.*)$ /home/wamahosp/learn.wamahospital.org/learning-management-system/lms/staticfiles/$1 [L]
+
+
+# Redirect /media requests if you use MEDIA files
+RewriteRule ^media/(.*)$ learning-management-system/lms/media/$1 [L]

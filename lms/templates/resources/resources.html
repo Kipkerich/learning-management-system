@@ -26,7 +26,7 @@
         {% for resource in resources %}
         <div class="col-md-6 col-lg-4 mb-4">
             <div class="card h-100 shadow-sm">
-                <div class="card-body">
+                <div class="card-body d-flex flex-column">
                     <div class="d-flex justify-content-between align-items-start mb-2">
                         <span class="badge bg-{% if resource.resource_type == 'document' %}primary{% elif resource.resource_type == 'video' %}danger{% elif resource.resource_type == 'link' %}success{% else %}secondary{% endif %}">
                             {{ resource.get_resource_type_display }}
@@ -37,7 +37,9 @@
                     </div>
                     
                     <h5 class="card-title">{{ resource.title }}</h5>
-                    <p class="card-text text-muted">{{ resource.description|truncatewords:20 }}</p>
+                    <p class="card-text text-muted" title="{{ resource.description }}">
+                        {{ resource.description|truncatewords:20 }}
+                    </p>
                     
                     <div class="mt-auto">
                         <small class="text-muted">
@@ -55,6 +57,10 @@
                         <a href="{% url 'download_resource' resource.pk %}" class="btn btn-outline-success btn-sm">
                             <i class="fas fa-download"></i> Download
                         </a>
+                        {% elif resource.url %}
+                        <a href="{{ resource.url }}" target="_blank" class="btn btn-outline-info btn-sm">
+                            <i class="fas fa-external-link-alt"></i> Open Link
+                        </a>
                         {% endif %}
                     </div>
                 </div>
@@ -65,7 +71,13 @@
             <div class="text-center py-5">
                 <i class="fas fa-book fa-3x text-muted mb-3"></i>
                 <h4>No resources available</h4>
-                <p class="text-muted">{% if is_trainer %}Get started by adding your first resource.{% else %}Check back later for learning materials.{% endif %}</p>
+                <p class="text-muted">
+                    {% if is_trainer %}
+                        Get started by adding your first resource.
+                    {% else %}
+                        Check back later for learning materials.
+                    {% endif %}
+                </p>
                 {% if is_trainer %}
                 <a href="{% url 'add_resource' %}" class="btn btn-primary">
                     <i class="fas fa-plus"></i> Add First Resource

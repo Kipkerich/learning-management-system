@@ -1,0 +1,134 @@
+{% extends 'base.html' %}
+
+{% block title %}Edit Student - {{ student.user.get_full_name|default:student.user.username }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4 mb-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-0 text-primary"><i class="fas fa-user-edit me-2"></i>Edit Student Profile</h2>
+            <p class="text-muted small mb-0">Update information for {{ student.user.get_full_name|default:student.user.username }} ({{ student.admission_number }})</p>
+        </div>
+        <a href="{% url 'student_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Directory
+        </a>
+    </div>
+
+    <form method="post" class="needs-validation">
+        {% csrf_token %}
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0"><i class="fas fa-user me-2"></i>1. Account Details</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">First Name</label>
+                        {{ user_form.first_name }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Last Name</label>
+                        {{ user_form.last_name }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Email Address</label>
+                        {{ user_form.email }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0"><i class="fas fa-graduation-cap me-2"></i>2. Academic & Personal Profile</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Admission Number <span class="text-danger">*</span></label>
+                        {{ profile_form.admission_number }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Course <span class="text-danger">*</span></label>
+                        {{ profile_form.course }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Cohort <span class="text-danger">*</span></label>
+                        {{ profile_form.cohort }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Enrollment Date <span class="text-danger">*</span></label>
+                        {{ profile_form.enrollment_date }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">ID / Passport Number</label>
+                        {{ profile_form.id_number }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Phone Number</label>
+                        {{ profile_form.phone_number }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Date of Birth <span class="text-danger">*</span></label>
+                        {{ profile_form.date_of_birth }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Gender <span class="text-danger">*</span></label>
+                        {{ profile_form.gender }}
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">Marital Status</label>
+                        {{ profile_form.marital_status }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Nationality</label>
+                        {{ profile_form.nationality }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Former High School</label>
+                        {{ profile_form.former_high_school }}
+                    </div>
+                    <div class="col-12">
+                        <label class="form-label fw-bold">Residential Address</label>
+                        {{ profile_form.address }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0"><i class="fas fa-users me-2"></i>3. Guardian Information</h5>
+            </div>
+            <div class="card-body p-4">
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Primary Guardian Name</label>
+                        {{ profile_form.parent_primary_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Primary Guardian Phone</label>
+                        {{ profile_form.parent_primary_phone }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Secondary Guardian Name</label>
+                        {{ profile_form.parent_secondary_name }}
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">Secondary Guardian Phone</label>
+                        {{ profile_form.parent_secondary_phone }}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-end gap-2">
+            <a href="{% url 'student_list' %}" class="btn btn-secondary px-4">Cancel</a>
+            <button type="submit" class="btn btn-success px-4 fw-bold">
+                <i class="fas fa-save me-1"></i> Save Changes
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}

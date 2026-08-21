@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ title }} - LMS{% endblock %}
+
+{% block content %}
+<div class="container my-4" style="max-width: 600px;">
+    <div class="card shadow border-0">
+        <div class="card-header bg-primary text-white py-3">
+            <h4 class="mb-0"><i class="fas fa-chalkboard-teacher me-2"></i>{{ title }}</h4>
+        </div>
+        <div class="card-body p-4">
+            <form method="post">
+                {% csrf_token %}
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Trainer <span class="text-danger">*</span></label>
+                    {{ form.trainer }}
+                    {% if form.trainer.errors %}<div class="text-danger small">{{ form.trainer.errors|first }}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Course</label>
+                    {{ form.course }}
+                    {% if form.course.errors %}<div class="text-danger small">{{ form.course.errors|first }}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Course Unit <span class="text-danger">*</span></label>
+                    {{ form.unit }}
+                    {% if form.unit.errors %}<div class="text-danger small">{{ form.unit.errors|first }}</div>{% endif %}
+                </div>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Cohort <span class="text-danger">*</span></label>
+                    {{ form.cohort }}
+                    {% if form.cohort.errors %}<div class="text-danger small">{{ form.cohort.errors|first }}</div>{% endif %}
+                </div>
+                <div class="d-flex justify-content-between align-items-center mt-4">
+                    <a href="{% url 'assignment_list' %}" class="btn btn-outline-secondary">Cancel</a>
+                    <button type="submit" class="btn btn-primary px-4"><i class="fas fa-save me-1"></i> Save Assignment</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const courseSelect = document.getElementById('id_course');
+    const unitSelect = document.getElementById('id_unit');
+
+    if (!courseSelect || !unitSelect) return;
+
+    // Build JavaScript objects for all available course units
+    const unitsData = [
+        {% for unit in form.fields.unit.queryset %}
+        { id: "{{ unit.id }}", name: "{{ unit.code }}: {{ unit.name|escapejs }}", courseId: "{{ unit.course_id }}" }{% if not forloop.last %},{% endif %}
+        {% endfor %}
+    ];
+
+    function filterUnits() {
+        const selectedCourseId = courseSelect.value;
+        const currentUnitVal = unitSelect.value;
+
+        // Clear current unit options
+        unitSelect.innerHTML = '';
+
+        // Default empty option
+        const emptyOpt = document.createElement('option');
+        emptyOpt.value = '';
+        emptyOpt.textContent = '-- Select Course Unit --';
+        unitSelect.appendChild(emptyOpt);
+
+        unitsData.forEach(u => {
+            if (!selectedCourseId || u.courseId === selectedCourseId) {
+                const opt = document.createElement('option');
+                opt.value = u.id;
+                opt.textContent = u.name;
+                if (u.id === currentUnitVal) {
+                    opt.selected = true;
+                }
+                unitSelect.appendChild(opt);
+            }
+        });
+    }
+
+    courseSelect.addEventListener('change', filterUnits);
+    // Initial filter if course is pre-selected
+    if (courseSelect.value) {
+        filterUnits();
+    }
+});
+</script>
+{% endblock %}

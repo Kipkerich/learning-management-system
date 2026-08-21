@@ -1,0 +1,145 @@
+{% extends 'base.html' %}
+
+{% block title %}Profile: {{ student.user.get_full_name }}{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <a href="{% url 'student_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Directory
+        </a>
+        <div class="btn-group">
+            <button onclick="window.print()" class="btn btn-primary"><i class="fas fa-print me-1"></i> Print Profile</button>
+            <a href="{% url 'edit_student' student.pk %}" class="btn btn-warning"><i class="fas fa-edit me-1"></i> Edit Details</a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-md-4">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-body text-center">
+                    <div class="py-4">
+                        <i class="fas fa-user-circle fa-7x text-light bg-secondary rounded-circle"></i>
+                    </div>
+                    <h4 class="mb-1">{{ student.user.get_full_name|default:student.user.username }}</h4>
+                    <p class="text-muted small mb-3">Adm No: <span class="fw-bold">{{ student.admission_number }}</span></p>
+                    
+                   <div class="card shadow-sm border-0">
+    <div class="card-header bg-white">
+        <h5 class="mb-0">Financial History</h5>
+    </div>
+    <div class="card-body">
+        <table class="table small">
+            <thead>
+                <tr>
+                    <th>Description</th>
+                    <th>Amount</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for invoice in student.invoices.all %}
+                <tr>
+                    <td>{{ invoice.fee_type.name }}</td>
+                    <td>KES {{ invoice.fee_type.amount }}</td>
+                    <td>
+                        {% if invoice.is_paid %}
+                            <span class="badge bg-success">Paid</span>
+                        {% else %}
+                            <span class="badge bg-danger">Pending</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if not invoice.is_paid %}
+                            <a href="{% url 'record_payment' invoice.id %}" class="btn btn-sm btn-primary">Pay</a>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0">
+                <div class="card-body">
+                    <h6 class="text-uppercase text-muted small fw-bold mb-3">System Info</h6>
+                    <ul class="list-unstyled mb-0">
+                        <li class="d-flex justify-content-between mb-2">
+                            <span>Enrollment:</span>
+                            <span class="fw-bold">{{ student.enrollment_date }}</span>
+                        </li>
+                        <li class="d-flex justify-content-between mb-2">
+                            <span>Nationality:</span>
+                            <span class="fw-bold">{{ student.nationality }}</span>
+                        </li>
+                        <li class="d-flex justify-content-between">
+                            <span>Status:</span>
+                            <span class="badge bg-success">Active</span>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-8">
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 text-primary"><i class="fas fa-graduation-cap me-2"></i>Academic & Personal Record</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-sm-6">
+                            <label class="text-muted small d-block">ID/Passport Number</label>
+                            <span class="h6">{{ student.id_number|default:"Not Provided" }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="text-muted small d-block">Former High School</label>
+                            <span class="h6">{{ student.former_high_school|default:"N/A" }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="text-muted small d-block">Marital Status</label>
+                            <span class="h6">{{ student.marital_status }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="text-muted small d-block">Gender</label>
+                            <span class="h6">{{ student.get_gender_display }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card shadow-sm border-0 mb-4">
+                <div class="card-header bg-white py-3">
+                    <h5 class="mb-0 text-primary"><i class="fas fa-users me-2"></i>Guardian Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-4">
+                        <div class="col-sm-6">
+                            <label class="text-muted small d-block">Parent/Guardian Name</label>
+                            <span class="h6">{{ student.parent_name }}</span>
+                        </div>
+                        <div class="col-sm-6">
+                            <label class="text-muted small d-block">Primary Contact</label>
+                            <span class="h6 text-primary">{{ student.parent_contact }}</span>
+                        </div>
+                        {% if student.parent_contact_secondary %}
+                        <div class="col-sm-6">
+                            <label class="text-muted small d-block">Secondary Contact</label>
+                            <span class="h6">{{ student.parent_contact_secondary }}</span>
+                        </div>
+                        {% endif %}
+                        <div class="col-12">
+                            <label class="text-muted small d-block">Residential Address</label>
+                            <span class="h6">{{ student.address }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
