@@ -105,13 +105,10 @@ def enter_results(request, assignment_id):
 
     # Get students enrolled in the course matching this unit and in this cohort
     course = assignment.unit.course
-    # Find CourseFee or Course matching name
-    from finance.models import CourseFee
-    course_fee = CourseFee.objects.filter(course_name__iexact=course.name).first()
 
     students = StudentProfile.objects.filter(cohort=assignment.cohort).select_related('user')
-    if course_fee:
-        students = students.filter(Q(course=course_fee) | Q(course__course_name__iexact=course.name))
+    if course:
+        students = students.filter(Q(course=course) | Q(course__name__iexact=course.name))
 
     if request.method == 'POST':
         # Process CAT and Exam scores submitted
@@ -176,8 +173,88 @@ def enter_results(request, assignment_id):
 @login_required
 @user_passes_test(is_admin)
 def admin_results_list(request):
-    results = StudentResult.objects.all().select_related('student', 'student__user', 'unit', 'unit__course', 'cohort')
-    return render(request, 'results/admin_results_list.html', {'results': results})
+    """Step 1: On clicking verify results, display list of cohorts."""
+    cohorts = Cohort.objects.all().prefetch_related('students', 'student_results')
+    cohort_data = []
+    for cohort in cohorts:
+        total_students = cohort.students.count()
+        results_count = cohort.student_results.count()
+        cohort_data.append({
+            'cohort': cohort,
+            'total_students': total_students,
+            'results_count': results_count,
+        })
+    return render(request, 'results/verify_cohorts.html', {'cohort_data': cohort_data})
+
+
+@login_required
+@user_passes_test(is_admin)
+def verify_results_courses(request, cohort_id):
+    """Step 2: On clicking a cohort, display list of courses in that cohort."""
+    cohort = get_object_or_404(Cohort, pk=cohort_id)
+    # Get all courses that have students in this cohort or units assigned/evaluated in this cohort
+    students_in_cohort = StudentProfile.objects.filter(cohort=cohort).select_related('course')
+    course_ids = set(s.course_id for s in students_in_cohort if s.course_id)
+
+    # Also check if any unit results exist for this cohort
+    unit_results_courses = Course.objects.filter(units__student_results__cohort=cohort)
+    courses = Course.objects.filter(Q(id__in=course_ids) | Q(id__in=unit_results_courses.values_list('id', flat=True))).distinct()
+
+    course_data = []
+    for course in courses:
+        student_count = students_in_cohort.filter(course=course).count()
+        unit_count = course.units.count()
+        course_data.append({
+            'course': course,
+            'student_count': student_count,
+            'unit_count': unit_count,
+        })
+
+    return render(request, 'results/verify_courses.html', {
+        'cohort': cohort,
+        'course_data': course_data
+    })
+
+
+@login_required
+@user_passes_test(is_admin)
+def verify_results_students(request, cohort_id, course_id):
+    """Step 3: On clicking a course, display list of students enrolled in that course for that cohort."""
+    cohort = get_object_or_404(Cohort, pk=cohort_id)
+    course = get_object_or_404(Course, pk=course_id)
+
+    students = StudentProfile.objects.filter(cohort=cohort, course=course).select_related('user')
+    student_data = []
+    for student in students:
+        results_count = student.results.filter(cohort=cohort).count()
+        student_data.append({
+            'student': student,
+            'results_count': results_count
+        })
+
+    return render(request, 'results/verify_students.html', {
+        'cohort': cohort,
+        'course': course,
+        'student_data': student_data
+    })
+
+
+@login_required
+@user_passes_test(is_admin)
+def verify_student_units(request, cohort_id, course_id, student_id):
+    """Step 4: On clicking a particular student, display the results of the units done."""
+    cohort = get_object_or_404(Cohort, pk=cohort_id)
+    course = get_object_or_404(Course, pk=course_id)
+    student = get_object_or_404(StudentProfile.objects.select_related('user', 'course', 'cohort'), pk=student_id)
+
+    results = StudentResult.objects.filter(student=student).select_related('unit', 'unit__course', 'cohort')
+
+    return render(request, 'results/verify_student_units.html', {
+        'cohort': cohort,
+        'course': course,
+        'student': student,
+        'results': results
+    })
 
 
 @login_required

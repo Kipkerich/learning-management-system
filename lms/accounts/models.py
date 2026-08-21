@@ -48,7 +48,7 @@ class StudentProfile(models.Model):
     date_of_birth = models.DateField()
     gender = models.CharField(max_length=10, choices=[('M', 'Male'), ('F', 'Female')])
     former_high_school = models.CharField(max_length=200, blank=True)
-    course = models.ForeignKey('finance.CourseFee', on_delete=models.SET_NULL, null=True, blank=True)
+    course = models.ForeignKey('courses.Course', on_delete=models.SET_NULL, null=True, blank=True)
     cohort = models.ForeignKey(Cohort, on_delete=models.SET_NULL, null=True, blank=True, related_name='students')
     phone_number = models.CharField(max_length=15, blank=True, null=True)
     marital_status = models.CharField(max_length=20, choices=[

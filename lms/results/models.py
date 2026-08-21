@@ -10,7 +10,7 @@ class TrainerUnitAssignment(models.Model):
     assigned_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        unique_together = ('trainer', 'unit', 'cohort')
+        unique_together = ('unit', 'cohort')
 
     def __str__(self):
         return f"{self.trainer.get_full_name() or self.trainer.username} - {self.unit.code} ({self.cohort.name})"

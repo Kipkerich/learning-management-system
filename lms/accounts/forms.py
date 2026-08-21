@@ -2,7 +2,7 @@ from django import forms
 from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.contrib.auth.models import User
 from .models import UserProfile, StudentProfile, Cohort
-from finance.models import CourseFee
+from courses.models import Course
 
 
 class BootstrapStyledForm(forms.Form):
@@ -138,7 +138,7 @@ class StudentProfileForm(forms.ModelForm):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['course'].queryset = CourseFee.objects.all()
+        self.fields['course'].queryset = Course.objects.all()
         self.fields['course'].empty_label = "-- Select Available Course --"
         self.fields['cohort'].queryset = Cohort.objects.all()
         self.fields['cohort'].empty_label = "-- Select Cohort --"

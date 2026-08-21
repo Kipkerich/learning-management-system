@@ -1,0 +1,72 @@
+{% extends 'base.html' %}
+
+{% block title %}Verify Results - {{ course.code }} Students - LMS{% endblock %}
+
+{% block content %}
+<div class="container my-4">
+    <!-- Breadcrumb Navigation -->
+    <nav aria-label="breadcrumb" class="mb-4">
+        <ol class="breadcrumb bg-light p-3 rounded shadow-sm">
+            <li class="breadcrumb-item"><a href="{% url 'admin_results_list' %}"><i class="fas fa-layer-group me-1"></i> Cohorts</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'verify_results_courses' cohort.id %}">{{ cohort.name }}</a></li>
+            <li class="breadcrumb-item active fw-bold text-primary" aria-current="page">{{ course.code }}</li>
+        </ol>
+    </nav>
+
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1"><i class="fas fa-users-line text-primary me-2"></i>Verify Results: Select Student</h2>
+            <p class="text-muted small mb-0">Cohort: <strong>{{ cohort.name }}</strong> &nbsp;|&nbsp; Course: <strong>{{ course.name }} ({{ course.code }})</strong></p>
+        </div>
+        <a href="{% url 'verify_results_courses' cohort.id %}" class="btn btn-outline-secondary shadow-sm">
+            <i class="fas fa-arrow-left me-1"></i> Back to Courses
+        </a>
+    </div>
+
+    {% if student_data %}
+    <div class="card border-0 shadow-sm">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0">
+                <thead class="table-light">
+                    <tr class="text-secondary small text-uppercase">
+                        <th class="ps-4">Student Name</th>
+                        <th>Admission Number</th>
+                        <th>Gender</th>
+                        <th>Recorded Unit Results</th>
+                        <th class="text-end pe-4">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in student_data %}
+                    <tr>
+                        <td class="ps-4">
+                            <div class="fw-bold text-dark">{{ item.student.user.get_full_name|default:item.student.user.username }}</div>
+                            <small class="text-muted">{{ item.student.user.email }}</small>
+                        </td>
+                        <td>
+                            <span class="badge bg-light text-dark border fw-bold">{{ item.student.admission_number }}</span>
+                        </td>
+                        <td>{{ item.student.get_gender_display }}</td>
+                        <td>
+                            <span class="badge bg-info text-dark px-2 py-1"><i class="fas fa-file-check me-1"></i> {{ item.results_count }} Unit(s)</span>
+                        </td>
+                        <td class="text-end pe-4">
+                            <a href="{% url 'verify_student_units' cohort.id course.id item.student.id %}" class="btn btn-sm btn-primary rounded-pill px-3">
+                                View Unit Results <i class="fas fa-chevron-right ms-1"></i>
+                            </a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% else %}
+    <div class="alert alert-info text-center py-5 shadow-sm">
+        <i class="fas fa-info-circle fa-3x mb-3 text-info"></i>
+        <h5>No Enrolled Students Found</h5>
+        <p class="text-muted mb-0">No students are currently enrolled in {{ course.name }} for {{ cohort.name }}.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

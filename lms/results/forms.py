@@ -41,6 +41,24 @@ class TrainerUnitAssignmentForm(forms.ModelForm):
         if self.instance and self.instance.pk and self.instance.unit and self.instance.unit.course:
             self.fields['course'].initial = self.instance.unit.course
 
+    def clean(self):
+        cleaned_data = super().clean()
+        unit = cleaned_data.get('unit')
+        cohort = cleaned_data.get('cohort')
+        trainer = cleaned_data.get('trainer')
+
+        if unit and cohort:
+            existing = TrainerUnitAssignment.objects.filter(unit=unit, cohort=cohort)
+            if self.instance and self.instance.pk:
+                existing = existing.exclude(pk=self.instance.pk)
+            if existing.exists():
+                already_assigned_trainer = existing.first().trainer
+                trainer_name = already_assigned_trainer.get_full_name() or already_assigned_trainer.username
+                raise forms.ValidationError(
+                    f"Unit '{unit.code}: {unit.name}' for cohort '{cohort.name}' is already assigned to trainer {trainer_name}. It cannot be assigned to another trainer."
+                )
+        return cleaned_data
+
 
 class StudentResultEntryForm(forms.ModelForm):
     class Meta:

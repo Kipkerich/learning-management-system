@@ -12,8 +12,11 @@ urlpatterns = [
     path('trainer/', views.trainer_portal, name='trainer_portal'),
     path('trainer/enter-results/<int:assignment_id>/', views.enter_results, name='enter_results'),
 
-    # Admin Results Management
+    # Admin Results Management & Drill-down Verification Flow
     path('admin/results/', views.admin_results_list, name='admin_results_list'),
+    path('admin/results/cohort/<int:cohort_id>/', views.verify_results_courses, name='verify_results_courses'),
+    path('admin/results/cohort/<int:cohort_id>/course/<int:course_id>/', views.verify_results_students, name='verify_results_students'),
+    path('admin/results/cohort/<int:cohort_id>/course/<int:course_id>/student/<int:student_id>/', views.verify_student_units, name='verify_student_units'),
     path('admin/results/<int:pk>/edit/', views.admin_edit_result, name='admin_edit_result'),
     path('admin/results/<int:pk>/delete/', views.admin_delete_result, name='admin_delete_result'),
     path('admin/results/<int:pk>/toggle-publish/', views.publish_results_toggle, name='publish_results_toggle'),
