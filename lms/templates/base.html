@@ -186,7 +186,7 @@
         <!-- Left Sidebar Navigation -->
         <nav id="sidebar">
             <a href="{% url 'dashboard' %}" class="sidebar-brand">
-                <span><i class="fas fa-graduation-cap me-2 text-primary"></i>LXP Portal</span>
+                <span><i class="fas fa-graduation-cap me-2 text-primary"></i>LMS Portal</span>
                 <button type="button" class="btn-close btn-close-white d-lg-none" id="sidebarCloseBtn" aria-label="Close"></button>
             </a>
 
@@ -229,7 +229,7 @@
                 {% else %}
                 <li>
                     <a href="{% url 'trainer_portal' %}" class="nav-link {% if request.resolver_match.url_name == 'trainer_portal' or request.resolver_match.url_name == 'enter_results' %}active{% endif %}">
-                        <i class="fas fa-pen-nib"></i> Trainer Results
+                        <i class="fas fa-pen-nib"></i>  Results
                     </a>
                 </li>
                 {% endif %}
@@ -314,7 +314,7 @@
                 </button>
                 <div class="fw-bold text-dark d-flex align-items-center">
                     <i class="fas fa-university text-primary me-2 d-none d-sm-inline"></i>
-                    <span>Wama Training Institute</span>
+                    <span>School Portal</span>
                 </div>
                 <div>
                     {% if user.is_authenticated %}
