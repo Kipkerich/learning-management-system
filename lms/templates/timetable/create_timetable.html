@@ -50,14 +50,23 @@
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label fw-bold">{{ form.date.label }}</label>
                                     {{ form.date }}
+                                    {% if form.date.errors %}
+                                        <div class="text-danger small mt-1">{{ form.date.errors|first }}</div>
+                                    {% endif %}
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label fw-bold">{{ form.start_time.label }}</label>
                                     {{ form.start_time }}
+                                    {% if form.start_time.errors %}
+                                        <div class="text-danger small mt-1">{{ form.start_time.errors|first }}</div>
+                                    {% endif %}
                                 </div>
                                 <div class="col-md-4 mb-3">
                                     <label class="form-label fw-bold">{{ form.end_time.label }}</label>
                                     {{ form.end_time }}
+                                    {% if form.end_time.errors %}
+                                        <div class="text-danger small mt-1">{{ form.end_time.errors|first }}</div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -66,20 +75,38 @@
                             <h5 class="text-primary border-bottom pb-2 mb-3">3. Session Details</h5>
                             <div class="row">
                                 <div class="col-md-6 mb-3">
-                                    <label class="form-label fw-bold">{{ form.subject.label }}</label>
-                                    {{ form.subject }}
+                                    <label class="form-label fw-bold">Unit</label>
+                                    {{ form.unit }}
+                                    {% if form.unit.errors %}
+                                        <div class="text-danger small mt-1">{{ form.unit.errors|first }}</div>
+                                    {% endif %}
+                                    <div class="form-text">Select unit from selected course.</div>
                                 </div>
                                 <div class="col-md-6 mb-3">
                                     <label class="form-label fw-bold">{{ form.trainer.label }}</label>
                                     {{ form.trainer }}
+                                    {% if form.trainer.errors %}
+                                        <div class="text-danger small mt-1">{{ form.trainer.errors|first }}</div>
+                                    {% endif %}
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label class="form-label fw-bold">{{ form.location.label }}</label>
-                                    {{ form.location }}
+                                    <div class="input-group">
+                                        {{ form.location }}
+                                        <a href="{% url 'manage_rooms' %}" class="btn btn-outline-secondary" target="_blank">
+                                            <i class="fas fa-door-open me-1"></i> Manage Rooms
+                                        </a>
+                                    </div>
+                                    {% if form.location.errors %}
+                                        <div class="text-danger small mt-1">{{ form.location.errors|first }}</div>
+                                    {% endif %}
                                 </div>
                                 <div class="col-md-12 mb-3">
                                     <label class="form-label fw-bold">{{ form.description.label }}</label>
                                     {{ form.description }}
+                                    {% if form.description.errors %}
+                                        <div class="text-danger small mt-1">{{ form.description.errors|first }}</div>
+                                    {% endif %}
                                 </div>
                             </div>
                         </div>
@@ -104,6 +131,14 @@
                             </div>
                         </div>
 
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    <p class="mb-0">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
                         <hr class="my-4">
                         
                         <div class="d-flex justify-content-end gap-2">
@@ -119,8 +154,46 @@
     </div>
 </div>
 
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const courseSelect = document.getElementById('id_course');
+    const unitSelect = document.getElementById('id_unit');
+
+    function updateUnits(selectedCourseId, selectedUnitId = null) {
+        if (!selectedCourseId) {
+            unitSelect.innerHTML = '<option value="">-- Select Unit --</option>';
+            return;
+        }
+
+        fetch(`{% url "api_get_units" %}?course_id=${selectedCourseId}`)
+            .then(response => response.json())
+            .then(data => {
+                unitSelect.innerHTML = '<option value="">-- Select Unit --</option>';
+                data.units.forEach(unit => {
+                    const option = document.createElement('option');
+                    option.value = unit.id;
+                    option.textContent = unit.name;
+                    if (selectedUnitId && String(unit.id) === String(selectedUnitId)) {
+                        option.selected = true;
+                    }
+                    unitSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching units:', error));
+    }
+
+    courseSelect.addEventListener('change', function () {
+        updateUnits(this.value);
+    });
+
+    if (courseSelect.value) {
+        const initialUnitId = unitSelect.value;
+        updateUnits(courseSelect.value, initialUnitId);
+    }
+});
+</script>
+
 <style>
-    /* Styling for form-controls that are rendered by Django widgets */
     .form-control, .form-select {
         border-radius: 8px;
         padding: 0.6rem 0.75rem;

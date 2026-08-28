@@ -1,0 +1,27 @@
+{% extends 'base.html' %}
+
+{% block title %}Delete Room - LMS{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    <div class="row">
+        <div class="col-md-6 mx-auto">
+            <div class="card shadow border-0">
+                <div class="card-header bg-danger text-white py-3">
+                    <h4 class="mb-0"><i class="fas fa-exclamation-triangle me-2"></i>Delete Room</h4>
+                </div>
+                <div class="card-body p-4 text-center">
+                    <p class="fs-5">Are you sure you want to delete room <strong>"{{ room.name }}"</strong>?</p>
+                    <p class="text-muted small">This action cannot be undone.</p>
+
+                    <form method="post" class="mt-4">
+                        {% csrf_token %}
+                        <a href="{% url 'manage_rooms' %}" class="btn btn-outline-secondary px-4 me-2">Cancel</a>
+                        <button type="submit" class="btn btn-danger px-4">Delete Room</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

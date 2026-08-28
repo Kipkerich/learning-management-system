@@ -1,31 +1,194 @@
 {% extends 'base.html' %}
 
+{% block title %}Edit Schedule - LMS{% endblock %}
+
 {% block content %}
-<div class="container mt-4">
-    <h2>Edit Timetable Entry</h2>
-    <hr>
+<div class="container mt-5 mb-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
 
-    <form method="post">
-        {% csrf_token %}
+            {% if messages %}
+                {% for message in messages %}
+                    <div class="alert alert-{{ message.tags }} alert-dismissible fade show shadow-sm border-0 mb-4" role="alert">
+                        {% if message.tags == 'success' %}
+                            <i class="fas fa-check-circle me-2"></i>
+                        {% else %}
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                        {% endif %}
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
 
-        {% if form.non_field_errors %}
-            <div class="alert alert-danger">
-                {{ form.non_field_errors }}
+            <div class="card shadow border-0">
+                <div class="card-header bg-warning text-dark py-3">
+                    <h3 class="mb-0 fs-4"><i class="fas fa-edit me-2"></i>Edit Timetable Entry</h3>
+                </div>
+
+                <div class="card-body p-4 p-md-5">
+                    <form method="post" novalidate>
+                        {% csrf_token %}
+
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2 mb-3">1. Academic Context</h5>
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label class="form-label fw-bold">{{ form.course.label }}</label>
+                                    {{ form.course }}
+                                    {% if form.course.errors %}
+                                        <div class="text-danger small mt-1">{{ form.course.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2 mb-3">2. Date & Time</h5>
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold">{{ form.date.label }}</label>
+                                    {{ form.date }}
+                                    {% if form.date.errors %}
+                                        <div class="text-danger small mt-1">{{ form.date.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold">{{ form.start_time.label }}</label>
+                                    {{ form.start_time }}
+                                    {% if form.start_time.errors %}
+                                        <div class="text-danger small mt-1">{{ form.start_time.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label class="form-label fw-bold">{{ form.end_time.label }}</label>
+                                    {{ form.end_time }}
+                                    {% if form.end_time.errors %}
+                                        <div class="text-danger small mt-1">{{ form.end_time.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <h5 class="text-primary border-bottom pb-2 mb-3">3. Session Details</h5>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">Unit</label>
+                                    {{ form.unit }}
+                                    {% if form.unit.errors %}
+                                        <div class="text-danger small mt-1">{{ form.unit.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label class="form-label fw-bold">{{ form.trainer.label }}</label>
+                                    {{ form.trainer }}
+                                    {% if form.trainer.errors %}
+                                        <div class="text-danger small mt-1">{{ form.trainer.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label fw-bold">{{ form.location.label }}</label>
+                                    <div class="input-group">
+                                        {{ form.location }}
+                                        <a href="{% url 'manage_rooms' %}" class="btn btn-outline-secondary" target="_blank">
+                                            <i class="fas fa-door-open me-1"></i> Manage Rooms
+                                        </a>
+                                    </div>
+                                    {% if form.location.errors %}
+                                        <div class="text-danger small mt-1">{{ form.location.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-12 mb-3">
+                                    <label class="form-label fw-bold">{{ form.description.label }}</label>
+                                    {{ form.description }}
+                                    {% if form.description.errors %}
+                                        <div class="text-danger small mt-1">{{ form.description.errors|first }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 p-3 bg-light rounded border">
+                            <div class="form-check form-switch">
+                                {{ form.is_published }}
+                                <label class="form-check-label fw-bold ms-2" for="{{ form.is_published.id_for_label }}">
+                                    Publish immediately
+                                </label>
+                            </div>
+                        </div>
+
+                        {% if form.non_field_errors %}
+                            <div class="alert alert-danger">
+                                {% for error in form.non_field_errors %}
+                                    <p class="mb-0">{{ error }}</p>
+                                {% endfor %}
+                            </div>
+                        {% endif %}
+
+                        <hr class="my-4">
+
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="{% url 'timetable' %}" class="btn btn-outline-secondary px-4">Cancel</a>
+                            <button type="submit" class="btn btn-warning px-5 shadow-sm">
+                                <i class="fas fa-save me-1"></i> Update Entry
+                            </button>
+                        </div>
+                    </form>
+                </div>
             </div>
-        {% endif %}
-
-        {% for field in form %}
-            <div class="mb-3">
-                {{ field.label_tag }}
-                {{ field }}
-                {% if field.errors %}
-                    <div class="text-danger small">{{ field.errors }}</div>
-                {% endif %}
-            </div>
-        {% endfor %}
-
-        <button type="submit" class="btn btn-success">Update</button>
-        <a href="{% url 'timetable' %}" class="btn btn-secondary">Cancel</a>
-    </form>
+        </div>
+    </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function () {
+    const courseSelect = document.getElementById('id_course');
+    const unitSelect = document.getElementById('id_unit');
+
+    function updateUnits(selectedCourseId, selectedUnitId = null) {
+        if (!selectedCourseId) {
+            unitSelect.innerHTML = '<option value="">-- Select Unit --</option>';
+            return;
+        }
+
+        fetch(`{% url "api_get_units" %}?course_id=${selectedCourseId}`)
+            .then(response => response.json())
+            .then(data => {
+                unitSelect.innerHTML = '<option value="">-- Select Unit --</option>';
+                data.units.forEach(unit => {
+                    const option = document.createElement('option');
+                    option.value = unit.id;
+                    option.textContent = unit.name;
+                    if (selectedUnitId && String(unit.id) === String(selectedUnitId)) {
+                        option.selected = true;
+                    }
+                    unitSelect.appendChild(option);
+                });
+            })
+            .catch(error => console.error('Error fetching units:', error));
+    }
+
+    courseSelect.addEventListener('change', function () {
+        updateUnits(this.value);
+    });
+
+    if (courseSelect.value) {
+        const initialUnitId = "{{ timetable.unit.id|default_if_none:'' }}";
+        updateUnits(courseSelect.value, initialUnitId);
+    }
+});
+</script>
+
+<style>
+    .form-control, .form-select {
+        border-radius: 8px;
+        padding: 0.6rem 0.75rem;
+        border: 1px solid #dee2e6;
+    }
+    .form-control:focus, .form-select:focus {
+        border-color: #0d6efd;
+        box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.1);
+    }
+</style>
 {% endblock %}
