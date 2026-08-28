@@ -27,6 +27,8 @@ def timetable_view(request):
     # Base Queryset
     if is_admin(request.user):
         timetables = Timetable.objects.all()
+    elif is_student(request.user) and hasattr(request.user, 'student_profile') and request.user.student_profile.course:
+        timetables = Timetable.objects.filter(is_published=True, course=request.user.student_profile.course)
     else:
         timetables = Timetable.objects.filter(is_published=True)
 
@@ -152,7 +154,13 @@ def delete_timetable(request, pk):
 # API endpoint for calendar view
 @login_required
 def timetable_json(request):
-    timetables = Timetable.objects.filter(is_published=True)
+    if is_admin(request.user):
+        timetables = Timetable.objects.all()
+    elif is_student(request.user) and hasattr(request.user, 'student_profile') and request.user.student_profile.course:
+        timetables = Timetable.objects.filter(is_published=True, course=request.user.student_profile.course)
+    else:
+        timetables = Timetable.objects.filter(is_published=True)
+
     data = []
 
     for timetable in timetables:
