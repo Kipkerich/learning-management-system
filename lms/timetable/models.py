@@ -12,6 +12,12 @@ class Room(models.Model):
         return self.name
 
 
+UNIT_TYPE_CHOICES = [
+    ('core', 'Core Unit'),
+    ('common', 'Common Unit'),
+]
+
+
 class Timetable(models.Model):
     date = models.DateField()
     start_time = models.TimeField()
@@ -28,6 +34,12 @@ class Timetable(models.Model):
         null=True,
         blank=True,
         related_name='timetable_sessions'
+    )
+    unit_type = models.CharField(
+        max_length=10,
+        choices=UNIT_TYPE_CHOICES,
+        default='core',
+        verbose_name="Unit Type"
     )
     description = models.TextField(blank=True)
     is_published = models.BooleanField(default=True)
@@ -50,7 +62,6 @@ class Timetable(models.Model):
 
     class Meta:
         ordering = ['date', 'start_time']
-        unique_together = ['date', 'start_time', 'trainer']
 
     def __str__(self):
         subj = self.unit.name if self.unit else self.subject
