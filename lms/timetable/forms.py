@@ -24,13 +24,14 @@ class TimetableForm(forms.ModelForm):
     class Meta:
         model = Timetable
         fields = [
-            'course', 'unit', 'date', 'start_time', 'end_time',
+            'course', 'unit', 'unit_type', 'date', 'start_time', 'end_time',
             'subject', 'trainer', 'location', 'description', 
             'repeat_count', 'is_published'
         ]
         widgets = {
             'course': forms.Select(attrs={'class': 'form-select', 'id': 'id_course'}),
             'unit': forms.Select(attrs={'class': 'form-select', 'id': 'id_unit'}),
+            'unit_type': forms.Select(attrs={'class': 'form-select', 'id': 'id_unit_type'}),
             'date': forms.DateInput(attrs={'class': 'form-control', 'type': 'date'}),          
             'start_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
             'end_time': forms.TimeInput(attrs={'class': 'form-control', 'type': 'time'}),
@@ -69,6 +70,7 @@ class TimetableForm(forms.ModelForm):
         trainer = cleaned_data.get('trainer')
         location = cleaned_data.get('location')
         unit = cleaned_data.get('unit')
+        unit_type = cleaned_data.get('unit_type') or 'core'
 
         if unit and not cleaned_data.get('subject'):
             cleaned_data['subject'] = unit.name
@@ -85,9 +87,16 @@ class TimetableForm(forms.ModelForm):
                 ).exclude(pk=self.instance.pk)
                 for session in trainer_conflicts:
                     if start_time < session.end_time and end_time > session.start_time:
-                        raise forms.ValidationError(
-                            f"Trainer {trainer.get_full_name() or trainer.username} is already assigned to a class at this time ({session.start_time.strftime('%H:%M')}-{session.end_time.strftime('%H:%M')})."
+                        is_combined_common = (
+                            unit_type == 'common' and
+                            session.unit_type == 'common' and
+                            location and
+                            session.location == location
                         )
+                        if not is_combined_common:
+                            raise forms.ValidationError(
+                                f"Trainer {trainer.get_full_name() or trainer.username} is already assigned to a class at this time ({session.start_time.strftime('%H:%M')}-{session.end_time.strftime('%H:%M')})."
+                            )
 
             # Check room double-booking
             if location:
@@ -97,8 +106,15 @@ class TimetableForm(forms.ModelForm):
                 ).exclude(pk=self.instance.pk)
                 for session in room_conflicts:
                     if start_time < session.end_time and end_time > session.start_time:
-                        raise forms.ValidationError(
-                            f"Room '{location.name}' is already reserved for another unit at this time ({session.start_time.strftime('%H:%M')}-{session.end_time.strftime('%H:%M')})."
+                        is_combined_common = (
+                            unit_type == 'common' and
+                            session.unit_type == 'common' and
+                            trainer and
+                            session.trainer == trainer
                         )
+                        if not is_combined_common:
+                            raise forms.ValidationError(
+                                f"Room '{location.name}' is already reserved for another unit at this time ({session.start_time.strftime('%H:%M')}-{session.end_time.strftime('%H:%M')})."
+                            )
 
         return cleaned_data
