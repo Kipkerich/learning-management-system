@@ -92,6 +92,7 @@ class TimetableModuleTestCase(TestCase):
         response = self.client.post(reverse('create_timetable'), {
             'course': self.course.id,
             'unit': self.unit1.id,
+            'unit_type': 'core',
             'date': '2025-09-01',
             'start_time': '09:00',
             'end_time': '11:00',
@@ -103,6 +104,70 @@ class TimetableModuleTestCase(TestCase):
         })
         self.assertEqual(response.status_code, 302)
         self.assertTrue(Timetable.objects.filter(course=self.course, unit=self.unit1).exists())
+
+    def test_common_units_combining_allowed(self):
+        # Create an initial common unit session
+        Timetable.objects.create(
+            date=date(2025, 9, 1),
+            start_time=time(9, 0),
+            end_time=time(11, 0),
+            course=self.course,
+            unit=self.unit1,
+            unit_type='common',
+            subject=self.unit1.name,
+            trainer=self.trainer_user,
+            location=self.room1
+        )
+
+        self.client.login(username='admin', password='password123')
+        # Combine another common unit with the same trainer in the same room at the same time
+        response = self.client.post(reverse('create_timetable'), {
+            'course': self.other_course.id,
+            'unit': self.other_unit.id,
+            'unit_type': 'common',
+            'date': '2025-09-01',
+            'start_time': '09:00',
+            'end_time': '11:00',
+            'trainer': self.trainer_user.id,
+            'location': self.room1.id,
+            'description': 'Combined common unit lecture',
+            'repeat_count': 1,
+            'is_published': True
+        })
+        self.assertEqual(response.status_code, 302)
+        self.assertTrue(Timetable.objects.filter(unit=self.other_unit, unit_type='common').exists())
+
+    def test_common_unit_different_room_fails(self):
+        # Create an initial common unit session in room1
+        Timetable.objects.create(
+            date=date(2025, 9, 1),
+            start_time=time(9, 0),
+            end_time=time(11, 0),
+            course=self.course,
+            unit=self.unit1,
+            unit_type='common',
+            subject=self.unit1.name,
+            trainer=self.trainer_user,
+            location=self.room1
+        )
+
+        self.client.login(username='admin', password='password123')
+        # Try to schedule a common unit in room2 with the same trainer at the same time (trainer cannot be in two rooms)
+        response = self.client.post(reverse('create_timetable'), {
+            'course': self.other_course.id,
+            'unit': self.other_unit.id,
+            'unit_type': 'common',
+            'date': '2025-09-01',
+            'start_time': '09:00',
+            'end_time': '11:00',
+            'trainer': self.trainer_user.id,
+            'location': self.room2.id,
+            'description': 'Clash in different room',
+            'repeat_count': 1,
+            'is_published': True
+        })
+        self.assertEqual(response.status_code, 200)
+        self.assertFalse(Timetable.objects.filter(unit=self.other_unit).exists())
 
     def test_student_only_views_enrolled_course_units(self):
         # Create a timetable session for CS101 and one for Nursing

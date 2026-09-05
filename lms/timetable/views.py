@@ -66,6 +66,7 @@ def create_timetable(request):
                     end_time = form.cleaned_data['end_time']
                     course = form.cleaned_data['course']
                     unit = form.cleaned_data['unit']
+                    unit_type = form.cleaned_data.get('unit_type') or 'core'
                     subject = form.cleaned_data.get('subject') or (unit.name if unit else '')
                     trainer = form.cleaned_data['trainer']
                     location = form.cleaned_data['location']
@@ -83,8 +84,15 @@ def create_timetable(request):
                         )
                         for session in trainer_conflicts:
                             if start_time < session.end_time and end_time > session.start_time:
-                                messages.error(request, f"Conflict on {schedule_date}: Trainer {trainer.get_full_name() or trainer.username} is already assigned at this time. No entries saved.")
-                                return render(request, 'timetable/create_timetable.html', {'form': form})
+                                is_combined_common = (
+                                    unit_type == 'common' and
+                                    session.unit_type == 'common' and
+                                    location and
+                                    session.location == location
+                                )
+                                if not is_combined_common:
+                                    messages.error(request, f"Conflict on {schedule_date}: Trainer {trainer.get_full_name() or trainer.username} is already assigned at this time. No entries saved.")
+                                    return render(request, 'timetable/create_timetable.html', {'form': form})
 
                         # Check room conflict
                         if location:
@@ -94,8 +102,15 @@ def create_timetable(request):
                             )
                             for session in room_conflicts:
                                 if start_time < session.end_time and end_time > session.start_time:
-                                    messages.error(request, f"Conflict on {schedule_date}: Room '{location.name}' is already booked at this time. No entries saved.")
-                                    return render(request, 'timetable/create_timetable.html', {'form': form})
+                                    is_combined_common = (
+                                        unit_type == 'common' and
+                                        session.unit_type == 'common' and
+                                        trainer and
+                                        session.trainer == trainer
+                                    )
+                                    if not is_combined_common:
+                                        messages.error(request, f"Conflict on {schedule_date}: Room '{location.name}' is already booked at this time. No entries saved.")
+                                        return render(request, 'timetable/create_timetable.html', {'form': form})
 
                         # Create entry
                         Timetable.objects.create(
@@ -104,6 +119,7 @@ def create_timetable(request):
                             end_time=end_time,
                             course=course,
                             unit=unit,
+                            unit_type=unit_type,
                             subject=subject,
                             trainer=trainer,
                             location=location,
