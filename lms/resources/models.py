@@ -27,6 +27,7 @@ class Resource(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     is_published = models.BooleanField(default=True)
+    courses = models.ManyToManyField('courses.Course', related_name='resources', blank=True, verbose_name="Target Courses")
 
     class Meta:
         ordering = ['-created_at']
