@@ -5,29 +5,120 @@
 {% block content %}
 <div class="container mt-4">
     <div class="row">
-        <div class="col-md-8 mx-auto">
-            <div class="card shadow-sm">
-                <div class="card-header bg-warning text-dark">
-                    <h3 class="mb-0"><i class="fas fa-edit"></i> Edit Resource</h3>
+        <div class="col-md-9 mx-auto">
+            <div class="card shadow-sm border-0">
+                <div class="card-header bg-warning text-dark py-3">
+                    <h3 class="card-title h5 mb-0"><i class="fas fa-edit me-2"></i>Edit Resource</h3>
                 </div>
-                <div class="card-body">
-                  <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    {% for field in form %}
+                <div class="card-body p-4">
+
+                    {% if form.non_field_errors %}
+                        <div class="alert alert-danger alert-dismissible fade show mb-4" role="alert">
+                            <div class="d-flex align-items-center">
+                                <i class="fas fa-exclamation-triangle me-2 fs-5"></i>
+                                <div>
+                                    {% for error in form.non_field_errors %}
+                                        <div>{{ error }}</div>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                        </div>
+                    {% endif %}
+
+                    <form method="post" enctype="multipart/form-data" novalidate>
+                        {% csrf_token %}
+
+                        <!-- Title -->
                         <div class="mb-3">
-                            {{ field.label_tag }}
-                            {{ field }}
-                            {% if field.help_text %}
-                                <div class="form-text">{{ field.help_text }}</div>
-                            {% endif %}
-                            {% for error in field.errors %}
-                                <div class="text-danger small">{{ error }}</div>
+                            <label for="{{ form.title.id_for_label }}" class="form-label fw-bold">Title <span class="text-danger">*</span></label>
+                            {{ form.title }}
+                            {% for error in form.title.errors %}
+                                <div class="invalid-feedback d-block"><i class="fas fa-info-circle me-1"></i>{{ error }}</div>
                             {% endfor %}
                         </div>
-                    {% endfor %}
-    <button type="submit" class="btn btn-primary">Save</button>
-</form>
 
+                        <!-- Resource Type -->
+                        <div class="mb-3">
+                            <label for="{{ form.resource_type.id_for_label }}" class="form-label fw-bold">Resource Type <span class="text-danger">*</span></label>
+                            {{ form.resource_type }}
+                            {% for error in form.resource_type.errors %}
+                                <div class="invalid-feedback d-block"><i class="fas fa-info-circle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <!-- Description -->
+                        <div class="mb-3">
+                            <label for="{{ form.description.id_for_label }}" class="form-label fw-bold">Description</label>
+                            {{ form.description }}
+                            {% for error in form.description.errors %}
+                                <div class="invalid-feedback d-block"><i class="fas fa-info-circle me-1"></i>{{ error }}</div>
+                            {% endfor %}
+                        </div>
+
+                        <div class="row">
+                            <!-- File Upload -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.file.id_for_label }}" class="form-label fw-bold">Upload File</label>
+                                {{ form.file }}
+                                <div class="form-text">For documents and videos (Max 300MB).</div>
+                                {% for error in form.file.errors %}
+                                    <div class="invalid-feedback d-block"><i class="fas fa-info-circle me-1"></i>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+
+                            <!-- URL Link -->
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.url.id_for_label }}" class="form-label fw-bold">Resource URL</label>
+                                {{ form.url }}
+                                <div class="form-text">For web links or online resources.</div>
+                                {% for error in form.url.errors %}
+                                    <div class="invalid-feedback d-block"><i class="fas fa-info-circle me-1"></i>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <!-- Target Courses Checklist -->
+                        <div class="card bg-light border mt-3 mb-4">
+                            <div class="card-header bg-light border-bottom">
+                                <label class="form-label fw-bold mb-0">
+                                    <i class="fas fa-graduation-cap me-1 text-primary"></i> Target Courses Checklist <span class="text-danger">*</span>
+                                </label>
+                                <small class="text-muted d-block">Select the course(s) where this resource should be published and visible.</small>
+                            </div>
+                            <div class="card-body">
+                                {% if form.courses.field.queryset %}
+                                    <div class="row row-cols-1 row-cols-md-2 g-2">
+                                        {% for checkbox in form.courses %}
+                                            <div class="col">
+                                                <div class="form-check p-2 bg-white rounded border">
+                                                    {{ checkbox.tag }}
+                                                    <label class="form-check-label ms-2 cursor-pointer" for="{{ checkbox.id_for_label }}">
+                                                        {{ checkbox.choice_label }}
+                                                    </label>
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <p class="text-warning mb-0"><i class="fas fa-exclamation-circle me-1"></i> No courses available to publish to. Please create courses first.</p>
+                                {% endif %}
+
+                                {% for error in form.courses.errors %}
+                                    <div class="invalid-feedback d-block mt-2"><i class="fas fa-exclamation-circle me-1"></i>{{ error }}</div>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-between align-items-center">
+                            <a href="{% url 'resource_detail' resource.pk %}" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-1"></i> Cancel
+                            </a>
+                            <button type="submit" class="btn btn-warning px-4">
+                                <i class="fas fa-save me-1"></i> Update Resource
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
